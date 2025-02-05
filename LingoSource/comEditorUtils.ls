@@ -408,15 +408,19 @@ on actuallyRegisterKeybind(i: number, ln: string)
   repeat while ln contains " " then
     offst = offset(" ", ln)
     if offst = 1 then
-      delete ln[1]
+      ln = ln.char[2..(ln.length)]
+      --delete ln[1]
     else if offset("--", ln) = 1 then
       exit repeat
     else
       a.append(keyToKeyCode(ln.char[1..(offst-1)]))
-      delete ln.char[1..offst]
+      ln = ln.char[(offst+1)..(ln.length)]
+      --delete ln.char[1..offst]
     end if
   end repeat
-  if (ln <> "") and offset("--", ln) <> 1 then a.append(keyToKeyCode(ln)) -- the rest of everything else
+  if (ln <> "") and offset("--", ln) <> 1 then
+    a.append(keyToKeyCode(ln)) -- the rest of everything else
+  end if
   
   GL_keyDict[i] = a
 end

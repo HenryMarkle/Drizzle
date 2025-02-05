@@ -379,8 +379,8 @@ on initEffect me
     end if
   end repeat
   
-  effectIn3D = FALSE
-  gRotOp = FALSE
+  effectIn3D = false
+  gRotOp = false
   repeat with op in efopts
     case op[1] of 
       "Layers":
@@ -9420,14 +9420,12 @@ on ApplyMosaicPlant me, q, c
     dmin = 9
     dmax = 19
     lr = 1
-    if solidMtrx[q2][c2][1] then exit
-    -- important comment, do not remove
+    if solidMtrx[q2][c2][1] then return
   else
     dmin = 19
     dmax = 29
     lr = 2
-    if solidMtrx[q2][c2][2] then exit
-    -- important comment, do not remove
+    if solidMtrx[q2][c2][2] then return
   end if
   
   case colrIntensity of
