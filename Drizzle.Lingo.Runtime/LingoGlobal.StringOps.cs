@@ -109,6 +109,9 @@ public sealed partial class LingoGlobal
                 if (idx.Start.IsFromEnd || idx.End.IsFromEnd)
                     throw new ArgumentException();
 
+                if (idx.End.Value > String.Length) idx = new Range(idx.Start.Value, String.Length);
+                if (idx.Start.Value > idx.End.Value) idx = new Range(idx.End.Value,idx.End.Value);
+
                 return String[(idx.Start.Value - 1)..(idx.End.Value)];
             }
         }

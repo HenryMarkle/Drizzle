@@ -147,8 +147,6 @@ on loadLevel me, lvlName, fullPath
   l2 = objFileio.readFile()
   objFileio.closeFile()
   
-  sv2 = gLOprops.duplicate()
-  
   
   
   
