@@ -1,4 +1,4 @@
-global gSaveProps, gTEprops, gTiles, gLEProps, gFullRender, gEEprops, gEffects, gLightEProps, lvlPropOutput, gLEVEL, gLOprops, gLoadedName, gViewRender, gMassRenderL, gCameraProps, gImgXtra, gEnvEditorProps, gPEprops, altGrafLG, gMegaTrash, showControls, gProps, gLOADPATH, gTrashPropOptions, solidMtrx, INT_EXIT, INT_EXRD, DRCustomMatList, DRLastTL, gCustomEffects
+global gSaveProps, gTEprops, gTiles, gLEProps, gFullRender, gEEprops, gEffects, gLightEProps, lvlPropOutput, gLEVEL, gLOprops, gLoadedName, gViewRender, gMassRenderL, gCameraProps, gImgXtra, gEnvEditorProps, gPEprops, altGrafLG, gMegaTrash, showControls, gProps, gLOADPATH, gTrashPropOptions, solidMtrx, INT_EXIT, INT_EXRD, DRCustomMatList, DRLastTL, gCustomEffects, GL_ptPos, GL_drPos, GL_keyDict
 
 on exitFrame me
   hadException: number = 0
@@ -7,6 +7,8 @@ on exitFrame me
   --  clearCache
   --  _global.clearGlobals()
   --  _movie.halt()
+  
+  -- Load config
   member("editorConfig").importFileInto("editorConfig.txt")
   if (member("editorConfig").text = VOID) or (member("editorConfig").text = "") or (member("editorConfig").text.line[1] <> member("baseConfig").text.line[1]) then
     fileCo = new xtra("fileio")
@@ -19,6 +21,7 @@ on exitFrame me
     return
   end if
   
+  -- Global var init
   clearLogs()
   if checkMinimize() then
     _player.appMinimize()
@@ -28,7 +31,7 @@ on exitFrame me
   lvlPropOutput = FALSE
   initDRInternal()
   gFullRender = 1
-  gViewRender = 1
+  gViewRender = 1 - getBoolConfig("Fast render")
   DRLastTL = 1
   gMassRenderL = []
   gLOADPATH = []
@@ -63,6 +66,26 @@ on exitFrame me
   end if
   
   solidMtrx = []
+  
+  -- Load keybinds
+  global gCustomKeybinds
+  gCustomKeybinds = getBoolConfigOrDefault("Custom keybinds", true)
+  member("editorKeybinds").text = ""
+  if gCustomKeybinds then
+    initCustomKeybindThings()
+    member("editorKeybinds").importFileInto("editorKeybinds.txt")
+    if (member("editorKeybinds").text <> VOID and member("editorKeybinds").text <> "") then
+      keyFL = member("editorKeybinds")
+      GL_keyDict = VOID
+      repeat with ln = 1 to the number of lines in keyFL.text
+        lin = keyFL.text.line[ln]
+        offst = offset(" : ", lin)
+        if (offst > 0) then
+          registerCustomKeybind(lin.char[1..(offst-1)], lin.char[(offst+3)..lin.length])
+        end if
+      end repeat
+    end if
+  end if
   
   -- LEVELEDITOR!!!!!
   cols: number = 72--gLOprops.size.loch
@@ -204,7 +227,7 @@ on exitFrame me
                 if (not matTl.autofit.findPos(#ignoreTiles)) then matTl.autofit[#ignoreTiles] = []      
                 
                 -- Import information
-                importPart = 0
+                importPart = 2 -- tiles by default
                 repeat with matLnNo = 1 to the number of lines in afMat.text
                   matLn = afMat.text.line[matLnNo]
                   if (matLn = "-Categories") then
@@ -248,6 +271,8 @@ on exitFrame me
   tilesInCat.add([#nm:"SH grate box", #sz:point(1,1), #specs:[0], #placeMethod:"rect", #color:color(160, 0, 255)])
   -- LB
   tilesInCat.add([#nm:"Alt Grate Box", #sz:point(1,1), #specs:[0], #placeMethod:"rect", #color:color(75, 75, 240)])
+  -- Alduris
+  tilesInCat.add([#nm:"Ventbox Rect", #sz:point(1,1), #specs:[0], #placeMethod:"rect", #color:color(0,0,255)])
   setFirstTileCat(gTiles.count + 1)
   
   sav = member("initImport")
@@ -264,11 +289,8 @@ on exitFrame me
     member("previewTilesDR").image = image(60000, 500, 1)
   end if
   
-  moreTilePreviews = getBoolConfig("More tile previews")
-  prevw = member("previewTiles").image
-  drprevw = member("previewTilesDR").image
-  repeat with q = 1 to the number of lines in sav.text then
-    savTextLine: string = sav.text.line[q]
+  repeat with q = 1 to the number of lines in sav.text
+    savTextLine = sav.text.line[q]
     if (savTextLine <> "") then
       if (savTextLine.char[1] = "-") then
         vl = value(savTextLine.char[2..savTextLine.length])
@@ -282,51 +304,11 @@ on exitFrame me
         writeException("Tile Init Error", "Line " && q && " is malformed in the Init.txt file from your Graphics folder.")
         hadException = 1
       else
-        if checkIsDrizzleRendering() then
-          -- Optimization for when only rendering, we don't need to copy previews. So long as it gets implemented, that is.
-          ad = value(savTextLine)
-          if (ad.tags.getPos("notTile") = 0) then
-            gTiles[gTiles.count].tls.add(ad)
-          end if
-        else
-          -- Import tile preview
-          ad = value(savTextLine)
-          if ad.findPos("ptPos") = 0 then
-            -- add if missing
-            ad[#ptPos] = 0
-          end if
-          
-          sav2 = member("previewImprt")
-          member("previewImprt").importFileInto("Graphics" & the dirSeparator & ad.nm & ".png")
-          sav2.name = "previewImprt"
-          --INTERNAL
-          if (checkDRInternal(ad.nm)) then
-            sav2.image = member(ad.nm).image
-          end if
-          calculatedHeight = sav2.image.rect.height
-          vertSZ = 16 * ad.sz.locV
-          horiSZ = 16 * ad.sz.locH
-          if (ad.tp = "voxelStruct") then
-            calculatedHeight = 1 + vertSZ + (20 * (ad.sz.locV + (ad.bfTiles * 2)) * ad.repeatL.count)
-          end if
-          rct = rect(0, calculatedHeight - vertSZ, horiSZ, calculatedHeight)
-          if ((ptPos + horiSZ + 1) > prevw.width) and (moreTilePreviews) then
-            drprevw.copyPixels(sav2.image, rect(drPos, 0, drPos + horiSZ, vertSZ), rct)
-            ad.ptPos = drPos + 60000
-            ad.addProp(#category, gTiles.count)
-            if (ad.tags.getPos("notTile") = 0) then
-              gTiles[gTiles.count].tls.add(ad)
-            end if
-            drPos = drPos + horiSZ + 1
-          else
-            prevw.copyPixels(sav2.image, rect(ptPos, 0, ptPos + horiSZ, vertSZ), rct)
-            ad.ptPos = ptPos
-            ad.addProp(#category, gTiles.count)
-            if (ad.tags.getPos("notTile") = 0) then
-              gTiles[gTiles.count].tls.add(ad)
-            end if
-            ptPos = ptPos + horiSZ + 1  
-          end if
+        -- Here is where it normally would have added the tile to the preview. That is extremely slow so we just straight up don't do that :3
+        ad = value(savTextLine)
+        ad[#ptPos] = 0
+        if (ad.tags.getPos("notTile") = 0) then
+          gTiles[gTiles.count].tls.add(ad)
         end if
       end if
     end if
@@ -824,6 +806,7 @@ on exitFrame me
     gEffects[gEffects.count].efs.add([#nm:"Grape Roots"])
     gEffects[gEffects.count].efs.add([#nm:"Og Grass"])
     gEffects[gEffects.count].efs.add([#nm:"Hand Growers"])
+    gEffects[gEffects.count].efs.add([#nm:"Head Lamps"])
   end if
   
   -- Custom effects
@@ -856,6 +839,10 @@ on exitFrame me
           end if
           
           -- Ok add the effect
+          if gEffects[gEffects.count].efs.count >= 7 then
+            -- wrap to a new space if will overflow. mostly because too lazy to figure out scrolling lol
+            gEffects.add([#nm:gEffects[gEffects.count].nm, #efs:[]])
+          end if
           gEffects[gEffects.count].efs.add(ad)
           gCustomEffects.append(ad.nm)
         else
@@ -922,6 +909,8 @@ on exitFrame me
     popupWarning("Init Issues", "Encountered issues while reading inits! See editorExceptionLog.txt for more info.")
   end if
 end
+
+
 
 
 
