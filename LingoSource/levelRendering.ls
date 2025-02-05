@@ -1281,7 +1281,7 @@ on drawATileTile(q: number, c: number, l: number, tl, frntImg: image, dt: list)
       
       d = -1
       repeat with ps = 1 to tl.repeatL.count then
-        repeat with ps2 = 1 to tl.repeatL[ps] then
+        repeat with ps2n = 1 to tl.repeatL[ps] then
           d = d + 1  
           if d + dp > 29 then
             exit repeat

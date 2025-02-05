@@ -9420,12 +9420,16 @@ on ApplyMosaicPlant me, q, c
     dmin = 9
     dmax = 19
     lr = 1
-    if solidMtrx[q2][c2][1] then return
+    if solidMtrx[q2][c2][1] then
+      return
+    end if
   else
     dmin = 19
     dmax = 29
     lr = 2
-    if solidMtrx[q2][c2][2] then return
+    if solidMtrx[q2][c2][2] then
+      return
+    end if
   end if
   
   case colrIntensity of

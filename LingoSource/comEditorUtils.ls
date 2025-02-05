@@ -470,7 +470,9 @@ on checkCustomKeybind(k: dynamic, d: dynamic)
   type inv: number
   type return: number
 
-  if dontRunStuff() or (k = VOID and d = VOID) then return False
+  if dontRunStuff() or (k = VOID and d = VOID) then
+    return False
+  end if
   global gstuff
   if not ilk(gstuff, #list) then gstuff = []
   if ilk(k, #string) and gstuff.getPos(k) = 0 then
@@ -487,7 +489,8 @@ on checkCustomKeybind(k: dynamic, d: dynamic)
         return FALSE
       end if
     else
-      if d = VOID then return False
+      if d = VOID then
+        return False
       else if ilk(d, #list) then
         v = d
       else
