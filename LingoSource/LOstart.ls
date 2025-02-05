@@ -34,3 +34,4 @@ on exitFrame me
   
   the randomSeed = _system.milliseconds
 end
+

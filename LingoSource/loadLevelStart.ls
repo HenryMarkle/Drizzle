@@ -14,13 +14,14 @@ on exitFrame me
   
   projects = []
   
-  pth = the moviePath & "LevelEditorProjects" & the dirSeparator
+  pth = the moviePath & "LevelEditorProjects\"
   repeat with f in gLOADPATH then
-    pth = pth & the dirSeparator & f
+    pth = pth & "\" & f
   end repeat
   
   fileList = [ ]
-  repeat with i = 1 to 300 then
+  i = 1
+  repeat while true then
     n = getNthFileNameInFolder(pth, i)
     if n = EMPTY then exit repeat
     if (char n.length-3 of n <> ".")then
@@ -28,6 +29,7 @@ on exitFrame me
     else
       fileList.append(n)
     end if
+    i = i + 1
   end repeat
   
   
@@ -57,3 +59,4 @@ on exitFrame me
   
   member("PalName").text = "Press 'N' to create a new level. Use left and right arrows to step in and out of subfolders"
 end
+

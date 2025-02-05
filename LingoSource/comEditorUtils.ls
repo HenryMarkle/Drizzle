@@ -1,10 +1,10 @@
-global gLoadedName, INT_EXIT, INT_EXRD, DRInternalList, DRFirstTileCat, DRLastMatCat, RandomMetals_allowed, RandomMetals_grabTiles, ChaoticStone2_needed, DRRandomMetal_needed, SmallMachines_grabTiles, SmallMachines_forbidden, RandomMachines_forbidden, RandomMachines_grabTiles, RandomMachines2_forbidden, RandomMachines2_grabTiles, DRBevelColors, CommsDrizzle
+global gLoadedName, INT_EXIT, INT_EXRD, DRInternalList, DRFirstTileCat, DRLastMatCat, RandomMetals_allowed, RandomMetals_grabTiles, ChaoticStone2_needed, DRRandomMetal_needed, SmallMachines_grabTiles, SmallMachines_forbidden, RandomMachines_forbidden, RandomMachines_grabTiles, RandomMachines2_forbidden, RandomMachines2_grabTiles, DRBevelColors, CommsDrizzle, gTiles, GL_ptPos, GL_drPos, GL_keyDict, gCustomKeybinds
 
 on clearLogs()
   --type fl: dynamic
   --type return: void
-  member("logText").text = "Rain World Community Editor; V.0.4.53; Editor exception log"
-  member("DEBUGTR").text = "Rain World Community Editor; V.0.4.53; Large trash log"
+  member("logText").text = "Rain World Community Editor; V.0.4.60; Editor exception log"
+  member("DEBUGTR").text = "Rain World Community Editor; V.0.4.60; Large trash log"
   fl = new xtra("fileio")
   fl.openFile(the moviePath & "editorExceptionLog.txt", 0)
   fl.delete()
@@ -18,6 +18,34 @@ on clearLogs()
   fl.openFile(the moviePath & "largeTrashLog.txt", 0)
   fl.writeString(member("DEBUGTR").text)
   fl.closeFile()
+end
+
+on prepareRelease()
+  member("logText").text = ""
+  member("editorConfig").text = ""
+  member("DEBUGTR").text = ""
+  member("editorKeybinds").text = ""
+  member("effectsInit").text = ""
+  member("matInit").text = ""
+  member("initImport").text = ""
+  member("effectsL").text = "<EFFECTS>"
+  member("editEffectName").text = ""
+  member("effectOptions").text = "[ Layers ]: All"&RETURN&"All     1     - 2 -   3     1:st and 2:nd     2:nd and 3:rd     "
+  member("level Name").text = "New Project"
+  member("ProjectsL").text = ""
+  member("previewTiles").image = image(1, 1, 1)
+  member("previewTilesDR").image = image(1, 1, 1)
+  member("previewImprt").image = image(1, 1, 1)
+end
+
+on checkDebugKeybinds()
+  if checkCustomKeybind(#ExportAssets, ["E","A",48]) then -- tab+e+a
+    exportAll()
+  else if checkCustomKeybind(#OutputInternalLog, ["I","L",48]) then -- tab+i+l
+    outputInternalLog()
+  else if checkCustomKeybind(#PrepareInternalsForRelease, ["P","I",48]) then-- tab+P+I
+    prepareRelease()
+  end if
 end
 
 on writeException(tp, msg)--(tp: string, msg: dynamic)
@@ -65,39 +93,14 @@ on outputInternalLog()
 end
 
 on popupWarning(ttl, msg)
-  --alertObj = new(xtra "MUI")
-  --alertArgs = [#buttons:#Ok, #icon:#caution, #title:ttl, #message:msg&RETURN&RETURN&"Press 'Ok' to dismiss.", #movable:TRUE]
-  --if objectp(alertObj) then
-  --  Alert(alertObj, alertArgs)
+  --if not checkIsDrizzleRendering() then
+  --  alertObj = new xtra("MUI")
+  --  alertArgs = [#buttons:#Ok, #icon:#caution, #title:ttl, #message:msg&RETURN&RETURN&"Press 'Ok' to dismiss.", #movable:TRUE]
+  --  if objectp(alertObj) then
+  --    Alert(alertObj, alertArgs)
+  --  end if
   --end if
 end
-
---on exportAll()
---  pth = the moviePath & "Export\"
---  objFileio = new xtra("fileio")
---  objImg = new xtra("ImgXtra")
---  repeat with c in [_movie.castLib["Internal"], _movie.castLib["customMems"], _movie.castLib["soundCast"], _movie.castLib["levelEditor"], _movie.castLib["Drought"], _movie.castLib["Dry Editor"]] then
---    cname = c.name
---    repeat with m in c.member then
---      mname = string(m.number)
---      repeat while mname.length < 3 then
---        put "0" before mname
---      end repeat
---      mname = mname&"_"&m.name
---      
---      if m.type = #bitmap then
---        objImg.ix_saveImage(["image":  m.image, "filename": pth&cname&"\"&mname&".bmp", "format": "BMP"])
---      end if
---      if m.type = #script then
---        createFile (objFileio, pth&cname&"\"&mname&".lingo")
---        objFileio.openFile(pth&cname&"\"&mname&".lingo", 0)
---        objFileio.writeString(m.scriptText)
---        objFileio.closeFile()
---      end if
---    end repeat
---  end repeat
---  _movie.halt()
---end
 
 on exportAll()
   --type pth: string
@@ -107,23 +110,35 @@ on exportAll()
   pth = the moviePath & "Export\"
   objFileio = new xtra("fileio")
   objImg = new xtra("ImgXtra")
-  repeat with c in [_movie.castLib["Internal"], _movie.castLib["customMems"], _movie.castLib["soundCast"], _movie.castLib["levelEditor"], _movie.castLib["Drought"], _movie.castLib["Dry Editor"], _movie.castLib["MSC"]]
+  i = 1
+  repeat while i < 100 -- I hope there's not more than 100 cast libs in the future lol
     --type c: dynamic
     --type cname: string
-    cname = c.name & "\"
+    c = castLib(i)
+    i = i + 1
+    if c = void then exit repeat
+    cname = c.name & "_"
     repeat with m in c.member
       --type m: dynamic
       --type mname: string
-      mname = m.name
-      if (mname = VOID) or (mname = "") then
-        mname = string(m.number)
+      if (m.name = VOID) then
+        fname = pth & c.name & "_" & string(m.number)
+      else
+        fname = pth & c.name & "_" & string(m.number) & "_" & m.name
       end if
       if (m.type = #bitmap) then
-        objImg.ix_saveImage(["image": m.image, "filename": pth & cname & mname & ".bmp", "format": "BMP"])
+        objImg.ix_saveImage(["image": m.image, "filename": fname & ".png", "format": "PNG"])
       else if (m.type = #script) then
-        createFile(objFileio, pth & cname & mname & ".lingo")
-        objFileio.openFile(pth & cname & mname & ".lingo", 0)
+        createFile(objFileio, pth & m.name & ".ls")
+        objFileio.openFile(pth & m.name & ".ls", 2)
         objFileio.writeString(m.scriptText)
+        objFileio.writeReturn(#windows)
+        objFileio.closeFile()
+      else if (m.type = #text) then
+        createFile(objFileio, fname & ".txt")
+        objFileio.openFile(fname & ".txt", 2)
+        objFileio.writeString(m.text)
+        objFileio.writeReturn(#windows)
         objFileio.closeFile()
       end if
     end repeat
@@ -143,6 +158,16 @@ on getBoolConfig(str)--(str: string)
   return false
 end
 
+on getBoolConfigOrDefault(str, def)
+  txt = member("editorConfig").text
+  repeat with q = 1 to the number of lines in txt
+    if (txt.line[q].char[1..(str.length)] = str) then
+      return txt.line[q] = str & " : TRUE"
+    end if
+  end repeat
+  return def
+end
+
 on getStringConfig(str)--(str: string)
   --type txt: string
   --type return: string
@@ -157,8 +182,24 @@ on getStringConfig(str)--(str: string)
   return "VANILLA"
 end
 
+on getStringConfigOrVoid(str)
+  txt = member("editorConfig").text
+  repeat with q = 1 to the number of lines in txt
+    if (txt.line[q].char[1..(str.length)] = str) then
+      return str.char[(str.length+3)..txt.line[q].length]
+    end if
+  end repeat
+  return VOID
+end
+
+on dontRunStuff()
+  return (_movie.window.sizeState = #minimized)
+end
+
 on checkMinimize()
   --type return: number
+  if gCustomKeybinds then return checkCustomKeybind(#Minimize, [56, 48])
+  
   if (_movie.window.sizeState <> #minimized) then
     if (_key.keyPressed(56)) then
       return (_key.keyPressed(48))
@@ -169,6 +210,8 @@ end
 
 on checkExitRender()
   --type return: number
+  if gCustomKeybinds then return checkCustomKeybind(#ExitRender, [48, "Z", "R"])
+  
   if (_movie.window.sizeState <> #minimized) then
     if (_key.keyPressed(48)) then
       if (INT_EXRD = "DROUGHT") then
@@ -189,6 +232,8 @@ end
 
 on checkExit()
   --type return: number
+  if gCustomKeybinds then return checkCustomKeybind(#Close, [53, 56])
+  
   if (_movie.window.sizeState <> #minimized) then
     if (INT_EXIT = "DROUGHT") then
       if (_key.keyPressed(56)) then
@@ -262,3 +307,291 @@ end
 --    fileOpener.writeReturn(#windows)
 --  end if
 --end
+
+on tryAddToPreview(ad)
+  if ad[#ptPos] <> 0 then return
+  
+  moreTilePreviews = getBoolConfig("More tile previews")
+  prevw = member("previewTiles").image
+  drprevw = member("previewTilesDR").image
+  
+  -- Import tile preview
+  sav2 = member("previewImprt")
+  member("previewImprt").importFileInto("Graphics\" & ad.nm & ".png")
+  sav2.name = "previewImprt"
+  --INTERNAL
+  if (checkDRInternal(ad.nm)) then
+    sav2.image = member(ad.nm).image
+  end if
+  calculatedHeight = sav2.image.rect.height
+  vertSZ = 16 * ad.sz.locV
+  horiSZ = 16 * ad.sz.locH
+  if (ad.tp = "voxelStruct") then
+    calculatedHeight = 1 + vertSZ + (20 * (ad.sz.locV + (ad.bfTiles * 2)) * ad.repeatL.count)
+  end if
+  rct = rect(0, calculatedHeight - vertSZ, horiSZ, calculatedHeight)
+  if ((GL_ptPos + horiSZ + 1) > prevw.width) and (moreTilePreviews) then
+    drprevw.copyPixels(sav2.image, rect(GL_drPos, 0, GL_drPos + horiSZ, vertSZ), rct)
+    ad.ptPos = GL_drPos + 60000
+    ad.addProp(#category, gTiles.count)
+    if (ad.tags.getPos("notTile") = 0) then
+      gTiles[gTiles.count].tls.add(ad)
+    end if
+    GL_drPos = GL_drPos + horiSZ + 1
+  else
+    prevw.copyPixels(sav2.image, rect(GL_ptPos, 0, GL_ptPos + horiSZ, vertSZ), rct)
+    ad.ptPos = GL_ptPos
+    ad.addProp(#category, gTiles.count)
+    if (ad.tags.getPos("notTile") = 0) then
+      gTiles[gTiles.count].tls.add(ad)
+    end if
+    GL_ptPos = GL_ptPos + horiSZ + 1  
+  end if
+end
+
+on initCustomKeybindThings()
+  global GL_keyCodeList, GL_allKeybinds
+  
+  -- Custom keywords and their corresponding key codes and textual representation
+  GL_keyCodeList = [["ArrowLeft", 123, "Left"], ["ArrowRight", 124, "Right"], ["ArrowDown", 125, "Down"], ["ArrowUp", 126, "Up"], ["Numpad0", 82, "Numpad 0"], ["Numpad1", 83, "Numpad 1"], ["Numpad2", 84, "Numpad 2"], ["Numpad3", 85, "Numpad 3"], ["Numpad4", 86, "Numpad 4"], ["Numpad5", 87, "Numpad 5"], ["Numpad6", 88, "Numpad 6"], ["Numpad7", 89, "Numpad 7"], ["Numpad8", 91, "Numpad 8"], ["Numpad9", 92, "Numpad 9"], ["NumpadPlus", 78, "Numpad Plus"], ["NumpadMinus", 70, "Numpad Minus"], ["NumpadTimes", 66, "Numpad Times"], ["NumpadDivide", 77, "Numpad Divide"], ["NumpadDot", 65, "Numpad Dot"], ["NumpadEnter", 76, "Numpad Enter"], ["Enter", 36, "Enter"], ["ContextMenu", 127, "Context Menu"], ["Escape", 53, "Escape"], ["Tab", 48, "Tab"], ["Space", " ", "Space"], ["Backspace", 51, "Backspace"], ["Insert", 114, "Insert"], ["Delete", 117, "Delete"], ["Home", 115, "Home"], ["End", 119, "End"], ["PageUp", 116, "Page Up"], ["PageDown", 121, "Page Down"], ["Pause", 113, "Pause"], ["F1", 122, "F1"], ["F2", 120, "F2"], ["F3", 99, "F3"], ["F4", 118, "F4"], ["F5", 96, "F5"], ["F6", 97, "F6"], ["F7", 98, "F7"], ["F8", 100, "F8"], ["F9", 101, "F9"], ["F10", 109, "F10"], ["F11", 103, "F11"], ["F12", 111, "F12"]]
+  
+  -- General keybind list
+end
+
+on keyToKeyCode(nm)
+  global GL_keyCodeList
+  repeat with tuple in GL_keyCodeList then
+    if tuple[1] = nm then
+      return tuple[2]
+    end if
+  end repeat
+  
+  if nm.length <> 1 and (nm <> "Control") and (nm <> "Shift") and (nm <> "Alt") and (nm <> "NOT") then
+    writeException("Custom Keybinds", "Key code '" & nm & "' not recognized!")
+    return nm
+  end if
+  
+  return nm
+end
+
+on keybindToIndex(k)
+  global GL_allKeybinds
+  return GL_allKeybinds.findPos(k)
+end
+
+on str2symbol(s)
+  repeat while s contains " " then
+    i = offset(" ", s)
+    s = s.char[1..(i-1)] & s.char[(i+1)..(s.length)]
+  end repeat
+  return symbol(s)
+end
+
+
+on actuallyRegisterKeybind(i, ln)
+  --if (i <= 0) or (i > GL_keyDict.count) then return
+  
+  a = []
+  repeat while ln contains " " then
+    offst = offset(" ", ln)
+    if offst = 1 then
+      delete ln[1]
+    else if offset("--", ln) = 1 then
+      exit repeat
+    else
+      a.append(keyToKeyCode(ln.char[1..(offst-1)]))
+      delete ln.char[1..offst]
+    end if
+  end repeat
+  if (ln <> "") and offset("--", ln) <> 1 then a.append(keyToKeyCode(ln)) -- the rest of everything else
+  
+  GL_keyDict[i] = a
+end
+
+on registerCustomKeybind(k, v)
+  if (k = "") or (v = "") or (v = "NONE") then return
+  
+  -- Create object if not already created
+  if GL_keyDict = VOID then
+    GL_keyDict = [:]
+    
+    -- Exit button (close editor button)
+    case getStringConfigOrVoid("Exit button") of
+      "VANILLA":
+        GL_keyDict[#close] = [53] -- Escape
+      "DRY":
+        GL_keyDict[#close] = [48, 36, "X"] -- Tab Shift X
+      otherwise:
+        -- DROUGHT or default
+        GL_keyDict[#close] = ["Shift", 53] -- Shift Escape
+    end case
+    
+    -- Minimize button
+    GL_keyDict[#minimize] = ["Shift", 48] -- Shift Tab
+    
+    -- Exit render button
+    case getStringConfigOrVoid("Exit render button") of
+      "VANILLA":
+        GL_keyDict[#exitrender] = [48] -- Tab
+      "DRY":
+        GL_keyDict[#exitrender] = [48, "X", "C"] -- Tab X C
+      otherwise:
+        -- DROUGHT or default
+        GL_keyDict[#exitrender] = [48, "Z", "R"] -- Tab Z R
+    end case
+  end if
+  
+  -- Actually register (why symbols? they're *a lot* faster than strings lol)
+  actuallyRegisterKeybind(str2symbol(k),v)
+end
+
+on checkCustomKeybind(k, d)
+  if dontRunStuff() or (k = VOID and d = VOID) then return False
+  global gstuff
+  if not ilk(gstuff, #list) then gstuff = []
+  if ilk(k, #string) and gstuff.getPos(k) = 0 then
+    gstuff.append(k)
+    popupWarning("Invalid keybind", k)
+    return false
+  end if
+  if gCustomKeybinds then
+    -- Try to retrieve the actual keybind
+    v = VOID
+    if GL_keyDict <> VOID and k <> VOID then
+      v = GL_keyDict[k]
+      if v = VOID then
+        return FALSE
+      end if
+    else
+      if d = VOID then return False
+      else if ilk(d, #list) then
+        v = d
+      else
+        return _key.keyPressed(d)
+      end if
+    end if
+    
+    control = 0
+    shift = 0
+    alt = 0
+    inv = 0
+    repeat with check in v then
+      if check = VOID then
+        next repeat
+      else if check = "NOT" then
+        inv = 1
+        next repeat
+      else if check = "Control" then
+        control = 1
+      else if check = "Shift" then
+        shift = 1
+      else if check = "Alt" then
+        alt = 1
+      else if inv=1 and _key.keyPressed(check) then
+        return False
+      else if inv=0 and not _key.keyPressed(check) then
+        return False
+      end if
+      inv = 0
+    end repeat
+    
+    if _key.controlDown then
+      if control=0 then
+        return false
+      end if
+    else if control=1 then
+      return false
+    end if
+    if _key.shiftDown then
+      if shift=0 then
+        return false
+      end if
+    else if shift=1 then
+      return false
+    end if
+    if _key.optionDown then
+      if alt=0 then
+        return false
+      end if
+    else if alt=1 then
+      return false
+    end if
+    
+    return True
+  else
+    if ilk(d, #list) then
+      inv = 0
+      repeat with check in d then
+        if check = "NOT" then
+          inv = 1
+          next repeat
+        else if not _key.keyPressed(check) and inv=0 then
+          return False
+        else if _key.keyPressed(check) and inv=1 then
+          return False
+        end if
+      end repeat
+      return true
+    else if d <> void then
+      return _key.keyPressed(d)
+    else
+      return false
+    end if
+  end if
+  return true
+end
+
+on getKeybindStr(k, d)
+  if k = VOID then
+    return d
+  end if
+  
+  v = GL_keyDict[k]
+  if v = VOID then return d
+  
+  global GL_keyCodeList
+  s = ""
+  inv = False
+  addPlus = False
+  
+  customStrCases = [["+", "plus"], ["-", "minus"], [",", "comma"], [".", "dot"], ["/", "slash"], ["\", "backslash"], [" ", "space"], ["`", "backtick"], ["~", "tilde"], ["!", "exclamation mark"], ["@", "at"], ["#", "pound"], ["$", "dollar sign"], ["%", "percent"], ["^", "caret"], ["&", "ampersand"], ["*", "asterisk"], ["(", "left parenthesis"], [")", "right parenthesis"], ["_", "underscore"], ["=", "equals"], ["|", "pipe"], ["'", "apostrophe"], [QUOTE, "quote"], [":", "colon"], [";", "semicolon"], ["?", "question mark"]]
+  
+  repeat with check in v then
+    if inv then
+      inv = False
+      next repeat
+    else if v = "NOT" then
+      inv = True
+      next repeat
+    end if
+    
+    if addPlus then s = s & "+"
+    addPlus = True
+    
+    if ilk(v, #string) then
+      p = [v, v]
+      repeat with pair in customStrCases then
+        if pair[1] = v then
+          p = pair
+          exit repeat
+        end if
+      end repeat
+      s = s & p[2]
+    else
+      str = "???"
+      repeat with tuple in GL_keyCodeList then
+        if tuple[2] = v then
+          str = tuple[3]
+          exit repeat
+        end if
+      end repeat
+      s = s & str
+    end if
+  end repeat
+  if s = "" then return d
+  return s
+end
+
+
+
+

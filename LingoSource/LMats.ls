@@ -37,7 +37,7 @@ on LIsMyTileSetOpenToThisTile(matName, tl, l)
   return 0
 end
 
-on LRenderTileMaterial(l: number, nm: string, frntImg)
+on LRenderTileMaterial(l, nm, frntImg)
   -- Random machines and chaotic stone-like materials (made by Alduris)
   if (DRCustomMatList.count >= 1) then
     matTl = DRCustomMatList[DRLastTL]
@@ -52,9 +52,9 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
     end if
     if (matTl.nm = nm) then
       matPickInfo = matTl.autofit
-      pickCats: list = []
-      pickTiles: list = []
-      pickIgnore: list = []
+      pickCats = []
+      pickTiles = []
+      pickIgnore = []
       savSeed = the randomSeed
       the randomSeed = gLOprops.tileSeed + l
       
@@ -74,7 +74,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
         repeat with c = 1 to gLOprops.size.locv
           LEPropqc = gLEProps.matrix[q][c][l][1]
           if (LEPropqc <> 0) then
-            addMe: number = 0
+            addMe = 0
             TEPropqc = gTEprops.tlMatrix[q][c][l]
             if(TEPropqc.tp = "material") then
               if(TEPropqc.data = matTl.nm) then
@@ -103,7 +103,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
       tileSelection = []
       repeat with tlGrp in gTiles then
         repeat with tl in tlGrp.tls then
-          if (pickCats.getPos(tlGrp.nm) <> 0 and pickIgnore.getPos(tl.nm) = 0) or (pickTiles.getPos(tl.nm) <> 0) then
+          if (pickCats.findPos(tlGrp.nm) <> VOID and pickIgnore.findPos(tl.nm) = VOID) or (pickTiles.findPos(tl.nm) <> VOID) then
             --tileSelection.add(tl)
             -- Only select tiles with some solid bits
             repeat with spec in tl.specs then
@@ -118,7 +118,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
       
       -- Draw the material
       if pickTiles.count > 0 then
-         -- this is slightly different than comms code but will fix that later (in comms because comms version has bugs)
+        -- this is slightly different than comms code but will fix that later (in comms because comms version has bugs)
         repeat while tls.count > 0 then
           tl = tls[random(tls.count)]
           
@@ -134,7 +134,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
             testTile = randomTiles[t][2]
             
             -- Determine legality of placement
-            legalToPlace: number = true
+            legalToPlace = true
             repeat with a = 0 to testTile.sz.locH-1 then
               repeat with b = 0 to testTile.sz.locV-1 then
                 testPoint = tl + point(a,b)
@@ -159,7 +159,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
             
             if legalToPlace then
               -- Place tile
-              rootPos: point = tl + point(((testTile.sz.locH.float/2.0) + 0.4999).integer-1, ((testTile.sz.locV.float/2.0) + 0.4999).integer-1)
+              rootPos = tl + point(((testTile.sz.locH.float/2.0) + 0.4999).integer-1, ((testTile.sz.locV.float/2.0) + 0.4999).integer-1)
               if(rootPos.inside(rect(gRenderCameraTilePos, gRenderCameraTilePos+point(100, 60))))then
                 frntImg = drawATileTile(rootPos.loch,rootPos.locV,l,testTile, frntImg, []) -- array argument required for chain holders. do not remove it!
               end if
@@ -169,7 +169,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
                 repeat with b = 0 to testTile.sz.locV-1 then
                   testPoint = tl + point(a,b)
                   spec = testTile.specs[(b+1) + (a*testTile.sz.locV)]
-                  getPt: number = tls.getPos(testPoint)
+                  getPt = tls.getPos(testPoint)
                   if getPt > 0 then
                     tls.deleteAt(getPt)
                   end if
@@ -190,7 +190,7 @@ on LRenderTileMaterial(l: number, nm: string, frntImg)
 end
 
 
-on LDrawATileMaterial(q, c, l, nm) --frntImg,
+on LDrawATileMaterial(q, c, l, nm) -- frntImg)
   if (DRCustomMatList.count >= 1) then
     matTl = DRCustomMatList[DRLastTL]
     if (matTl.nm <> nm) then
@@ -219,7 +219,7 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
         mText = matTl.texture
         matFile = member("MatTexImport")
         if (DRLastTexImp <> nm) then
-          member("MatTexImport").importFileInto("Materials" & the dirSeparator & nm & "Texture.png")
+          member("MatTexImport").importFileInto("Materials\" & nm & "Texture.png")
           matFile.name = "MatTexImport"
           DRLastTexImp = nm
         end if
@@ -360,7 +360,7 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
             rnd = random(tlRnd) - 1
             matFile = member("MatImport")
             if (DRLastMatImp <> nm) then
-              member("MatImport").importFileInto("Materials" & the dirSeparator & nm & ".png")
+              member("MatImport").importFileInto("Materials\" & nm & ".png")
               matFile.name = "MatImport"
               DRLastMatImp = nm
             end if
@@ -444,7 +444,7 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
           if (matTl.findPos(#slope) <> VOID) then
             matFile = member("MatSlpImport")
             if (DRLastSlpImp <> nm) then
-              member("MatSlpImport").importFileInto("Materials" & the dirSeparator & nm & "Slopes.png")
+              member("MatSlpImport").importFileInto("Materials\" & nm & "Slopes.png")
               matFile.name = "MatSlpImport"
               DRLastSlpImp = nm
             end if
@@ -500,7 +500,7 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
           if (matTl.findPos(#floor) <> VOID) then
             matFile = member("MatFlrImport")
             if (DRLastFlrImp <> nm) then
-              member("MatFlrImport").importFileInto("Materials" & the dirSeparator & nm & "Floor.png")
+              member("MatFlrImport").importFileInto("Materials\" & nm & "Floor.png")
               matFile.name = "MatFlrImport"
               DRLastFlrImp = nm
             end if
@@ -560,7 +560,7 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
         end if
         matFile = member("MatPipelikeImport")
         if (DRLastPipeImp <> nm) then
-          member("MatPipelikeImport").importFileInto("Materials" & the dirSeparator & nm & "Pipes.png")
+          member("MatPipelikeImport").importFileInto("Materials\" & nm & "Pipes.png")
           matFile.name = "MatPipelikeImport"
           DRLastPipeImp = nm
         end if
@@ -673,7 +673,7 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
         end if
         matFile = member("MatTrshImport")
         if (DRLastTrshImp <> nm) then
-          member("MatTrshImport").importFileInto("Materials" & the dirSeparator & nm & "Trash.png")
+          member("MatTrshImport").importFileInto("Materials\" & nm & "Trash.png")
           matFile.name = "MatTrshImport"
           DRLastTrshImp = nm
         end if
@@ -706,3 +706,5 @@ on LDrawATileMaterial(q, c, l, nm) --frntImg,
   end if
   --return frntImg
 end
+
+

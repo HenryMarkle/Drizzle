@@ -7,15 +7,24 @@ on exitFrame me
   else
     sprite(189).blend = 0
   end if
+  
+  if dontRunStuff() then
+    gLightEProps.lastTm = _system.milliseconds
+    go the frame
+    return
+  end if
+  
   --  if checkKey("N") then
   --    gLightEProps.lightObjects.add([#ps:point(1040/2, 800/2), #sz:point(50, 70), #rt:0, #clr:0])
   --    gLightEProps.edObj = gLightEProps.lightObjects.count
   --  end if
   
   repeat with q = 1 to 4 then
-    if (_key.keyPressed([86, 91, 88, 84][q]))and(gDirectionKeys[q] = 0) and _movie.window.sizeState <> #minimized then
-      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * _key.keyPressed(83) + 34 * _key.keyPressed(85))
-      if not _key.keyPressed(92) then
+    if (me.getDirection(q))and(gDirectionKeys[q] = 0) then
+      fast = checkCustomKeybind(#MoveFast, 83)
+      faster = checkCustomKeybind(#MoveFaster, 85)
+      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * fast + 34 * faster)
+      if not checkCustomKeybind(#MoveOutside, 92) then
         if gLEProps.camPos.loch < -26 then
           gLEProps.camPos.loch = -26
         end if
@@ -30,7 +39,7 @@ on exitFrame me
         end if
       end if
     end if
-    gDirectionKeys[q] = _key.keyPressed([86, 91, 88, 84][q])
+    gDirectionKeys[q] = me.getDirection(q)
     --script("propEditor").renderPropsImage()
   end repeat
   
@@ -39,19 +48,19 @@ on exitFrame me
   if me.checkKey("Z") then
     gLightEProps.col = (1-gLightEProps.col)
   end if
-  if _mouse.rightmouseDown and _movie.window.sizeState <> #minimized then
+  if _mouse.rightmouseDown then
     gLightEProps.rot = lookAtPoint(gLightEProps.pos, _mouse.mouseLoc)
   else
     gLightEProps.pos = _mouse.mouseLoc
   end if
   
-  if _key.keyPressed("C") and _movie.window.sizeState <> #minimized then
+  if checkCustomKeybind(#LightMapStretchTL, "C") then
     glgtimgQuad[1] = _mouse.mouseLoc + gLEProps.camPos*20
-  else if _key.keyPressed("V") and _movie.window.sizeState <> #minimized then
+  else if checkCustomKeybind(#LightMapStretchTR, "V") then
     glgtimgQuad[2] = _mouse.mouseLoc + gLEProps.camPos*20
-  else if _key.keyPressed("B") and _movie.window.sizeState <> #minimized then
+  else if checkCustomKeybind(#LightMapStretchBL, "B") then
     glgtimgQuad[3] = _mouse.mouseLoc + gLEProps.camPos*20
-  else if _key.keyPressed("N") and _movie.window.sizeState <> #minimized then
+  else if checkCustomKeybind(#LightMapStretchBR, "N") then
     glgtimgQuad[4] = _mouse.mouseLoc + gLEProps.camPos*20
   end if
   
@@ -67,30 +76,30 @@ on exitFrame me
   end if
   
   if _system.milliseconds -  gLightEProps.lastTm > 10 then
-    if _key.keyPressed("W") and _movie.window.sizeState <> #minimized then
+    if checkCustomKeybind(#LightScaleVerticalIncrease, "W") then
       gLightEProps.sz.locV = gLightEProps.sz.locV + 1
-    else if _key.keyPressed("S") and _movie.window.sizeState <> #minimized then
+    else if checkCustomKeybind(#LightScaleVerticalDecrease, "S") then
       gLightEProps.sz.locV = gLightEProps.sz.locV - 1
     end if
     
-    if _key.keyPressed("D") and _movie.window.sizeState <> #minimized then
+    if checkCustomKeybind(#LightScaleHorizontalIncrease, "D") then
       gLightEProps.sz.locH = gLightEProps.sz.locH + 1
-    else if _key.keyPressed("A") and _movie.window.sizeState <> #minimized then
+    else if checkCustomKeybind(#LightScaleHorizontalDecrease, "A") then
       gLightEProps.sz.locH = gLightEProps.sz.locH - 1
     end if
     
-    if _key.keyPressed("Q") and _movie.window.sizeState <> #minimized then
+    if checkCustomKeybind(#LightRotateLeft, "Q") then
       gLightEProps.rot = gLightEProps.rot - 1
-    else if _key.keyPressed("E") and _movie.window.sizeState <> #minimized then
+    else if checkCustomKeybind(#LightRotateRight, "E") then
       gLightEProps.rot = gLightEProps.rot + 1
     end if
     
-    if _key.keyPressed("J") and _movie.window.sizeState <> #minimized then
+    if checkCustomKeybind(#LightAngleLeft, "J") then
       gLightEProps.lightAngle = restrict( gLightEProps.lightAngle -1, 0, 360)--( gLightEProps.lightAngle -1, 90, 180)
       if gLightEProps.lightAngle = 0 then
         gLightEProps.lightAngle = 360
       end if
-    else if _key.keyPressed("L") and _movie.window.sizeState <> #minimized then
+    else if checkCustomKeybind(#LightAngleRight, "L") then
       gLightEProps.lightAngle = restrict( gLightEProps.lightAngle +1, 0, 360)--( gLightEProps.lightAngle +1, 90, 180)
       if gLightEProps.lightAngle = 360 then
         gLightEProps.lightAngle = 0
@@ -98,9 +107,9 @@ on exitFrame me
     end if
     
     if geverysecond then
-      if _key.keyPressed("I") and _movie.window.sizeState <> #minimized then
+      if checkCustomKeybind(#LightAngleDecrease, "I") then
         gLightEProps.flatness = restrict( gLightEProps.flatness - 1, 1, 10)
-      else if _key.keyPressed("K") and _movie.window.sizeState <> #minimized then
+      else if checkCustomKeybind(#LightAngleIncrease, "K") then
         gLightEProps.flatness = restrict( gLightEProps.flatness + 1, 1, 10)
       end if
       geverysecond = 0
@@ -195,37 +204,36 @@ on exitFrame me
 end
 
 
+on getDirection me, q
+  -- check order: left, up, right, down
+  k = [#MoveLeft, #MoveUp, #MoveRight, #MoveDown][q]
+  orig = [86, 91, 88, 84][q]
+  return checkCustomKeybind(k, orig)
+end
+
 
 on checkKey me, key
   rtrn = 0
-  gLightEProps.keys[symbol(key)] = _key.keyPressed(key) and _movie.window.sizeState <> #minimized
+  
+  kb = VOID
+  case key of
+    "Z":
+      kb = #LightSwitchMode
+    "M":
+      kb = #LightMapStretchApply
+    "f":
+      kb = #LightSelectNext
+    "r":
+      kb = #LightSelectPrev
+  end case
+  
+  gLightEProps.keys[symbol(key)] = checkCustomKeybind(kb, key)
   if (gLightEProps.keys[symbol(key)])and(gLightEProps.lastKeys[symbol(key)]=0) then
     rtrn = 1
   end if
   gLightEProps.lastKeys[symbol(key)] = gLightEProps.keys[symbol(key)]
   return rtrn
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

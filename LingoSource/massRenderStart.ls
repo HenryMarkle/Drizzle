@@ -9,9 +9,9 @@ on exitFrame me
     _player.quit()
   end if
   
-  pth = the moviePath & the dirSeparator & "LevelEditorProjects"
+  pth = the moviePath & "\LevelEditorProjects"
   repeat with f in gLOADPATH then
-    pth = pth & the dirSeparator & f
+    pth = pth & "\" & f
   end repeat
   
   projects = []
@@ -53,3 +53,4 @@ on exitFrame me
   
   member("PalName").text = "Press 'A' to select all in folder. Press 'C' to deselect all. Press ENTER to start rendering."
 end
+

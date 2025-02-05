@@ -40,3 +40,4 @@ on exitFrame me
   
   gLEprops.levelEditors[1].p.mirrorPos = gLOprops.size.loch/2
 end
+

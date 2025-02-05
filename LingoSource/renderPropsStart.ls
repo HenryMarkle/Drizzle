@@ -12,8 +12,7 @@ on exitFrame(me)
   end if
   c = 1
   keepLooping = 1
-  --Set by LevelRenderer.cs now.
-  --afterEffects = (_movie.frame > 51)
+  afterEffects = (_movie.frame > 51)
   gLastImported = ""
   gCurrentlyRenderingTrash = FALSE
   if (gRenderTrashProps.count > 0) then
@@ -24,7 +23,7 @@ on exitFrame(me)
   repeat with q = 0 to 29
     sprq = sprite(50 - q)
     sprq.loc = point(683 - q, 384 - q)
-    val: number = (q.float + 1.0) / 30.0 * 255
+    val = (q.float + 1.0) / 30.0 * 255
     sprq.color = color(val, val, val)
   end repeat
   propsToRender = []
@@ -40,3 +39,4 @@ on exitFrame(me)
   end repeat
   softProp = VOID
 end
+

@@ -8,12 +8,20 @@ on exitFrame me
     sprite(241).blend = 0
   end if
   
+  if dontRunStuff() then
+    lstSpace = 0
+    go the frame
+    return
+  end if
+  
+  
   repeat with q = 1 to 4 then
     
-    if (_key.keyPressed([86, 91, 88, 84][q]))and(gDirectionKeys[q] = 0) and _movie.window.sizeState <> #minimized then
-      
-      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * _key.keyPressed(83) + 34 * _key.keyPressed(85))
-      if not _key.keyPressed(92) then
+    if (me.getDirection(q))and(gDirectionKeys[q] = 0) then
+      fast = checkCustomKeybind(#MoveFast, 83)
+      faster = checkCustomKeybind(#MoveFaster, 85)
+      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * fast + 34 * faster)
+      if not checkCustomKeybind(#MoveOutside, 92) then
         if gLEProps.camPos.loch < -1 then
           gLEProps.camPos.loch = -1
         end if
@@ -36,7 +44,7 @@ on exitFrame me
       me.drawEfMtrx(gEEprops.editEffect)
       
     end if
-    gDirectionKeys[q] = _key.keyPressed([86, 91, 88, 84][q])
+    gDirectionKeys[q] = me.getDirection(q)
   end repeat
   
   if gEnvEditorProps.waterLevel = -1 then
@@ -46,19 +54,19 @@ on exitFrame me
     sprite(220).rect = ((rct.intersect(rect(0,0,52,40))+rect(1, 1, 1, 1))*rect(16,16,16,16))+rect(0, -8, 0, 0)
   end if
   
-  msTile: point = (_mouse.mouseLoc/point(16.0, 16.0))-point(0.4999, 0.4999)
+  msTile = (_mouse.mouseLoc/point(16.0, 16.0))-point(0.4999, 0.4999)
   msTile = point(msTile.loch.integer, msTile.locV.integer) 
   msTile = msTile + gLEProps.camPos
   
-  actn: number = 0
-  actn2: number = 0
+  actn = 0
+  actn2 = 0
   
-  gEEprops.keys.m1 = _mouse.mouseDown and _movie.window.sizeState <> #minimized
+  gEEprops.keys.m1 = _mouse.mouseDown
   if (gEEprops.keys.m1)and(gEEprops.lastKeys.m1=0) then
     actn = 1
   end if
   gEEprops.lastKeys.m1 = gEEprops.keys.m1
-  gEEprops.keys.m2 = _mouse.rightmouseDown and _movie.window.sizeState <> #minimized
+  gEEprops.keys.m2 = _mouse.rightmouseDown
   if (gEEprops.keys.m2)and(gEEprops.lastKeys.m2=0) then
     actn2 = 1
   end if
@@ -99,7 +107,7 @@ on exitFrame me
         me.updateEffectsMenu(point(1, 0))
       end if
       
-      if _key.keyPressed(" ") and _movie.window.sizeState <> #minimized then
+      if checkCustomKeybind(#EffectSelect, " ") then
         me.newEffect()
         gEEprops.editEffect = gEEprops.effects.count
         gEEprops.selectEditEffect = gEEprops.effects.count
@@ -115,7 +123,7 @@ on exitFrame me
         me.updateEffectsL(1)
       end if
       if gEEprops.editEffect <> void then
-        if (_key.keyPressed(" ") and _movie.window.sizeState <> #minimized)and(lstSpace=0)then
+        if (checkCustomKeybind(#EffectSelect, " "))and(lstSpace=0)then
           gEEprops.editEffect = gEEprops.selectEditEffect
           me.initMode("editEffect")
           me.updateEffectsL(0)
@@ -149,7 +157,7 @@ on exitFrame me
         else if gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][1] = "Leaf Density" then
           me.changeOption()
         else
-          if (_key.keyPressed(" ") and _movie.window.sizeState <> #minimized)and(lstSpace=0)then
+          if (checkCustomKeybind(#EffectSelect, " "))and(lstSpace=0)then
             me.changeOption()
           end if
         end if
@@ -163,27 +171,49 @@ on exitFrame me
       sprite(244).rect = (rect(msTile-gLEProps.camPos, msTile-gLEProps.camPos) * rect(16,16,16,16)) + rect(0, 0, 16, 16) + sizeAdd
       
   end case
-  type sizeAdd: rect
   
   sprite(243).rect = (rect(msTile-gLEProps.camPos, msTile-gLEProps.camPos) * rect(16,16,16,16)) + rect(0, 0, 16, 16)
   
   --put msTile
   
-  lstSpace = _key.keyPressed(" ") and _movie.window.sizeState <> #minimized
-  --if _key.keyPressed("G")=0 then
+  lstSpace = checkCustomKeybind(#EffectSelect, " ")
   script("levelOverview").goToEditor()
   go the frame
-  -- end if
 end
 
 
-
+on getDirection me, q
+  -- check order: left, up, right, down
+  k = [#MoveLeft, #MoveUp, #MoveRight, #MoveDown][q]
+  orig = [86, 91, 88, 84][q]
+  return checkCustomKeybind(k, orig)
+end
 
 
 on checkKey me, key
-  type return: number
-  rtrn: number = 0
-  gEEprops.keys[symbol(key)] = _key.keyPressed(key) and _movie.window.sizeState <> #minimized
+  rtrn = 0
+  
+  kb = VOID
+  case key of
+    "W":
+      kb = #EffectSelectUp
+    "S":
+      kb = #EffectSelectDown
+    "A":
+      kb = #EffectCategoryPrev
+    "D":
+      kb = #EffectCategoryNext
+    "N":
+      kb = #EffectModeNew
+    "E":
+      kb = #EffectModeEdit
+    "r":
+      kb = #EffectBrushBigger
+    "f":
+      kb = #EffectBrushSmaller
+  end case
+  
+  gEEprops.keys[symbol(key)] = checkCustomKeybind(kb, key) and not dontRunStuff()
   if (gEEprops.keys[symbol(key)])and(gEEprops.lastKeys[symbol(key)]=0) then
     rtrn = 1
   end if
@@ -193,7 +223,7 @@ end
 
 
 
-on updateEffectsMenu me, mv: point
+on updateEffectsMenu me, mv
   gEEprops.emPos = gEEprops.emPos + mv
   
   if gEEprops.emPos.locH < 1 then
@@ -208,7 +238,7 @@ on updateEffectsMenu me, mv: point
     gEEprops.emPos.locV = 1
   end if
   
-  txt: string = ""
+  txt = ""
   put "[" && gEffects[gEEprops.emPos.locH].nm && "]" after txt
   put RETURN after txt
   
@@ -226,8 +256,8 @@ on updateEffectsMenu me, mv: point
 end
 
 
-on updateEffectsL me, mv: number
-  txt: string = ""
+on updateEffectsL me, mv
+  txt = ""
   if gEEprops.effects.count <> 0 then
     gEEprops.selectEditEffect = gEEprops.selectEditEffect + mv
     if gEEprops.selectEditEffect < 1 then
@@ -483,6 +513,11 @@ on newEffect me
       ef.options.add(["Finger Thickness", ["Small", "Medium", "FAT", "Random"], "Medium"])
       ef.options.add(["Finger Length", ["Short", "Medium", "Tall", "Random"], "Medium"])
       
+    "Head Lamp":
+      ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
+      ef.options.add(["Color", ["Color1", "Color2", "Dead"], "Dead"])
+      ef.options.add(["Lamp Color", ["Color1", "Color2", "Dead"], "Dead"])
+      
     "Wires":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
       ef.options.add(["Fatness", ["1px", "2px", "3px", "random"], "2px"])
@@ -572,7 +607,7 @@ on newEffect me
       
     otherwise:
       if gCustomEffects.getPos(ef.nm) > 0 then
-        if origEf.tp = "individual" then
+        if origEf.tp = "individual" or origEf.tp = "individualHanger" or origEf.tp = "individualClinger" then
           ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "1"])
         else
           ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
@@ -592,7 +627,7 @@ on newEffect me
           end if
         end if
         
-        if origEf.tp = "clinger" then
+        if origEf.tp = "clinger" or origEf.tp = "standardClinger" then
           ef.options.add(["Side", ["Left", "Right", "Random"], "Random"])
         end if
         
@@ -639,14 +674,14 @@ on useBrush me, pnt, fac
         if cEff <> VOID then exit repeat
       end repeat
     end if
-    strength = 10 + (90* _key.keyPressed("T"))
-    if ["BlackGoo", "Fungi Flowers", "Lighthouse Flowers", "Colored Fungi Flowers", "Colored Lighthouse Flowers", "High Fern", "High Grass", "Fern", "Giant Mushroom", "Sprawlbush", "featherFern", "Fungus Tree", "Restore As Scaffolding", "Restore As Pipes", "Small Springs", "Super BlackGoo", "Stained Glass Properties", "Cobwebs", "Hand Growers"].getPos(efName)>0 then
+    strength = 10 + (90* checkCustomKeybind(#EffectBrushPowerful, "T"))
+    if ["BlackGoo", "Fungi Flowers", "Lighthouse Flowers", "Colored Fungi Flowers", "Colored Lighthouse Flowers", "High Fern", "High Grass", "Fern", "Giant Mushroom", "Sprawlbush", "featherFern", "Fungus Tree", "Restore As Scaffolding", "Restore As Pipes", "Small Springs", "Super BlackGoo", "Stained Glass Properties", "Cobwebs", "Hand Growers", "Head Lamp"].getPos(efName)>0 then
       strength = 10000
       if (efName <> "BlackGoo") and (efName <> "Super BlackGoo") then
         gEEprops.brushSize = 1
       end if
     else if cEff <> VOID then
-      if cEff.tp = "individual" then
+      if cEff.tp = "individual" or cEff.tp = "individualHanger" or cEff.tp = "individualClinger" then
         strength = 10000
         gEEprops.brushSize = 1
       end if
@@ -720,7 +755,8 @@ on initMode me, md
     "createNew":
       -- me.drawEfMtrx(rect(1,1,52,40), 0)
       sprite(229).rect = rect((53*16)+8, 8, 1366-8, 10*16)
-      member("EEhelp").text = "Create new: Use the W, A, S, D keys and the spacebar to select an effect to add. Press E to edit effects added previously."    
+      --member("EEhelp").text = "Create new: Use the W, A, S, D keys and the spacebar to select an effect to add. Press E to edit effects added previously."
+      member("EEhelp").text = "Create new: Use the W, A, S, D keys and the spacebar to select an effect to add. Press E to edit effects added previously."
     otherwise:
       sprite(229).rect = rect(-1, -1, -1, -1)
       member("EEhelp").text = "---"    
@@ -798,25 +834,24 @@ on changeOption me
           me.updateEffectsL(0)
       end case
     "Seed":
-      if _key.keyPressed("A") and _movie.window.sizeState <> #minimized then
+      if checkCustomKeybind(#EffectCategoryPrev, "A") then
         gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] -1
       end if
-      if _key.keyPressed("D") and _movie.window.sizeState <> #minimized then
+      if checkCustomKeybind(#EffectCategoryNext, "D") then
         gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] +1
       end if
       gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = restrict(gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3], 1, 500)
     "Leaf Density":
-      if _key.keyPressed("A") and _movie.window.sizeState <> #minimized then
+      if checkCustomKeybind(#EffectCategoryPrev, "A") then
         gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] -1
       end if
-      if _key.keyPressed("D") and _movie.window.sizeState <> #minimized then
+      if checkCustomKeybind(#EffectCategoryNext, "D") then
         gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] +1
       end if
       gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = restrict(gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3], 1, 100)
       
       
-      
-    "Color", "Detail Color", "Fatness", "Size", "Layers", "3D", "Ceramic Color", "Effect Color", "Variation", "Color 1", "Color 2", "Affect Gradients and Decals", "Rotate", "Color Intensity", "Fruit Density", "Mushroom Size", "Mushroom Width", "Flowers", "Side", "Finger Thickness", "Finger Length":
+    "Color", "Detail Color", "Fatness", "Size", "Layers", "3D", "Ceramic Color", "Effect Color", "Variation", "Color 1", "Color 2", "Affect Gradients and Decals", "Rotate", "Color Intensity", "Fruit Density", "Mushroom Size", "Mushroom Width", "Flowers", "Side", "Finger Thickness", "Finger Length", "Lamp Color":
       gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][2][gEEprops.emPos.locH]
       
       
@@ -837,6 +872,8 @@ on updateAllText me
   me.updateEffectsMenu(point(0,0))
   
 end
+
+
 
 
 

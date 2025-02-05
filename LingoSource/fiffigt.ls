@@ -1,36 +1,62 @@
 --detta skript räknar ut distansen mellan två punkter
-on diag(point1: point, point2: point)
-  type return: number
-  rectHeight: number = abs(point1.locV - point2.locV)
-  rectWidth: number = abs(point1.locH - point2.locH)
+on diag(point1, point2)
+  rectHeight = abs(point1.locV - point2.locV)
+  rectWidth = abs(point1.locH - point2.locH)
   return sqrt((rectHeight * rectHeight) + (rectWidth * rectWidth))
 end
 
-on diagWI(point1: point, point2: point, dig: number)
-  type return: number
-  RectHeight: number = ABS(point1.locV - point2.locV)
-  RectWidth: number = ABS(point1.locH - point2.locH)
+on diagWI(point1, point2, dig)
+  RectHeight = ABS(point1.locV - point2.locV)
+  RectWidth = ABS(point1.locH - point2.locH)
   return ((RectHeight * RectHeight) + (RectWidth * RectWidth) < dig*dig )
 end 
 
-on diagNoSqrt(point1: point, point2: point)
-  type return: number
-  RectHeight: number = ABS(point1.locV - point2.locV)
-  RectWidth: number = ABS(point1.locH - point2.locH)
+on diagNoSqrt(point1, point2)
+  RectHeight = ABS(point1.locV - point2.locV)
+  RectWidth = ABS(point1.locH - point2.locH)
   
-  diagonal: number = (RectHeight * RectHeight) + (RectWidth * RectWidth)
+  diagonal = (RectHeight * RectHeight) + (RectWidth * RectWidth)
   
   return diagonal
 end
 
-on vertFlipRect(rct: rect)
-  type return: list
+on vertFlipRect(rct)
   return [point(rct.right, rct.top),point(rct.left, rct.top),point(rct.left, rct.bottom),point(rct.right, rct.bottom)]
 end
 
 --tar fram en förflyttning mellan två punkter, bergänsad till theMovement
-on moveToPoint(pointA: point, pointB: point, theMovement: number)
-  type return: point
+on moveToPoint(pointA, pointB, theMovement)
+  --  --tar fram en riktning
+  --      pLocH = pointA.locH
+  --      pLocV = pointA.locV
+  --      
+  --      pTargetH = pointB.locH
+  --      pTargetV = pointB.locV
+  --      
+  --      y_diff = pTargetV.float - pLocV.float
+  --      x_diff = pLocH.float - pTargetH.float
+  --      
+  --      if x_diff <> 0 then
+  --        rotationAngleRad = atan(y_diff / x_diff)
+  --      else
+  --        rotationAngleRad = 1.5 * PI
+  --      end if
+  --      
+  --      if pTargetH > pLocH then
+  --        fuckedupanglefix_parameter = 0  -- 2 * PI
+  --      else 
+  --        fuckedupanglefix_parameter = PI
+  --      end if
+  --      rotationAngleRad = fuckedupanglefix_parameter - rotationAngleRad
+  --      
+  --      --ändrar krafter
+  --      pVePower = theMovement * sin(rotationAngleRad)
+  --      pHoPower = theMovement * cos(rotationAngleRad)
+  --      
+  --      theMovePoint = point(pHoPower, pVePower)
+  --      
+  --      return theMovePoint  
+  
   
   pointB = pointB-pointA
   diagonal = diag(point(0,0), pointB)
@@ -58,8 +84,7 @@ on returnAbsolutePoint p1, p2
   return point(realX, realY)
 end
 
-on lerp(A: number, B: number, val: number)
-  type return: number
+on lerp(A, B, val)
   val = restrict(val, 0, 1)
   if(B < A)then
     sv = A
@@ -151,23 +176,21 @@ end
 
 
 
-on lookAtPoint(pos: point, lookAtpoint: point)
-  type return: number
+on lookAtPoint(pos, lookAtpoint)
+  --sätter rotation
+  --  lookAtpoint = pPointsL.getAt(sprDataL[#lookPoint])[#pos]
+  --  pos = pPointsL.getAt(sprDataL[#locPoint])[#pos]
   
   
-  y_diff: number = lookAtpoint.locV.float - pos.locV.float
-  x_diff: number = pos.locH.float - lookAtpoint.locH.float
+  y_diff = lookAtpoint.locV.float - pos.locV.float
+  x_diff = pos.locH.float - lookAtpoint.locH.float
   
-  type rotationAngleRad: number
-
   if x_diff <> 0 then
     rotationAngleRad = atan(y_diff / x_diff)
   else
     rotationAngleRad = 1.5 * PI
   end if
   
-  type fuckedupanglefix_parameter: number
-
   if lookAtpoint.locH > pos.locH then
     fuckedupanglefix_parameter = 0  -- 2 * PI
   else 
@@ -178,22 +201,21 @@ on lookAtPoint(pos: point, lookAtpoint: point)
   return ((rotationAngleRad * 180 / PI) + 90)
 end
 
-on degToVec(deg: number)
-  type return: point
+on degToVec(deg)
   rad = -2 * PI * ((deg + 90) / 360.0).float
   return point(-cos(rad), sin(rad))
 end
 
-on degToVecFac2(deg: number, facH: number, facV: number)
+on degToVecFac2(deg, facH, facV)
   deg = deg + 90
   deg = -deg 
-  rad: number = ((deg/360.0).float)*PI*2
+  rad = ((deg/360.0).float)*PI*2
   
   return point(-cos(rad)*facH, sin(rad)*facV)
 end
 
 
-on closestPointOnLine(pnt: point, A: point, B: point)
+on closestPointOnLine(pnt, A, B)
   return giveCrossPoint(pnt, pnt + giveDirFor90degrToLine(A, B), A, B)
 end
 
@@ -201,29 +223,25 @@ end
 
 
 
-
-on giveDirFor90degrToLine(pnt1: point, pnt2: point)
-  type return: point
-  
-  X1: number = pnt1.locH
-  Y1: number = pnt1.locV
-  
-  X2: number = pnt2.locH
-  Y2: number = pnt2.locV
+on giveDirFor90degrToLine(pnt1, pnt2)
   
   
-  Ydiff: number = Y1-Y2
-  Xdiff: number = X1-X2
+  X1 = pnt1.locH
+  Y1 = pnt1.locV
   
-  type dir: number
-
+  X2 = pnt2.locH
+  Y2 = pnt2.locV
+  
+  
+  Ydiff = Y1-Y2
+  Xdiff = X1-X2
+  
   if Xdiff<>0 then
     dir = Ydiff/Xdiff
   else
     dir = 1
   end if
   
-  type newDir: number
   
   if dir<>0 then
     newDir = -1.0/dir
@@ -231,10 +249,10 @@ on giveDirFor90degrToLine(pnt1: point, pnt2: point)
     newDir = 1
   end if
   
-  newPnt: point = point(1, newDir)
+  newPnt = point(1, newDir)
   
   
-  fac: number = 1
+  fac = 1
   
   if X2 < X1 then 
     if Y2 < Y1 then
@@ -681,9 +699,8 @@ on Bezier(A, cA, B, cB, f)
   return LerpVector(cA, cB, f)
 end
 
-on CacheLoadImage(fileName: string)
-  -- implemented in C#
-end
+
+
 
 
 

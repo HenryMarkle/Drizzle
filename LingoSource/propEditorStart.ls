@@ -77,9 +77,9 @@ on exitFrame me
   gPEprops.pmPos = point(1,1)
   
   --version fix
-  repeat with qb in gPeProps.props then
-    actualSettings = qb[5].settings
-    idealSettings = gProps[qb[3].loch].prps[qb[3].locV].settings
+  repeat with q in gPeProps.props then
+    actualSettings = q[5].settings
+    idealSettings = gProps[q[3].loch].prps[q[3].locV].settings
     repeat with i = 1 to idealSettings.count then
       smbl = idealSettings.getPropAt(i)
       if(actualSettings.findpos(smbl) = void)then
@@ -105,3 +105,4 @@ on exitFrame me
   call(#updatePropMenu, point(0,0))
   member("propMenu").text = member("propBaseMenu").text
 end
+

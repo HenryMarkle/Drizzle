@@ -21,3 +21,4 @@ on change me
     newSize[4] = value(sprite(me.spriteNum).text)
   end if
 end
+
