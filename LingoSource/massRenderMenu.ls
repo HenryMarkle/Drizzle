@@ -51,8 +51,8 @@ on exitFrame me
   txt = "MASS RENDER"
   put RETURN after txt
   put RETURN after txt
-  repeat with q in massRenderSelectL then
-    put q after txt
+  repeat with ql in massRenderSelectL then
+    put ql after txt
     put RETURN after txt
   end repeat
   
@@ -109,9 +109,9 @@ on exitFrame me
   
   if not dontRunStuff() then
     if _key.keyPressed("A") then
-      repeat with q in projects then
-        if ( massRenderSelectL.getPos(pth &q) = 0)and(chars(q, 1, 1) <> "#")then
-          massRenderSelectL.add(pth & q)
+      repeat with qp in projects then
+        if ( massRenderSelectL.getPos(pth & qp) = 0)and(chars(qp, 1, 1) <> "#")then
+          massRenderSelectL.add(pth & qp)
         end if
       end repeat
     else if _key.keyPressed("C") then

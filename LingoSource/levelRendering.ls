@@ -2026,7 +2026,7 @@ end
 --end
 
 
-on drawHorizontalSurface(row, dpt)
+on drawHorizontalSurface(row: number, dpt: number, tl)
   -- if row < 10 then
   pnt1 = point(0, row*20)
   pnt2 = point(gLOprops.size.locH*20, row*20)
@@ -2055,7 +2055,7 @@ on drawHorizontalSurface(row, dpt)
   --end if
 end
 
-on drawVerticalSurface(col, dpt)
+on drawVerticalSurface(col: number, dpt: number, tl)
   --if col < 26 then
   pnt1 = point(col*20, 0)
   pnt2 = point(col*20, gLOprops.size.locV*20)

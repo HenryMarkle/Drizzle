@@ -1333,9 +1333,9 @@ on ApplyCustomEffect(me, q, c, effectr, efname)
             
             if cEff.findPos("outline") then -- outline, if wanted
               if cEff.outline then
-                repeat with j in [[point(-1,-1), color(0,0,255)], [point(-0,-1), color(0,0,255)], [point(-1,-0), color(0,0,255)], [point(1,1), color(255,0,0)],[point(0,1), color(255,0,0)],[point(1,0), color(255,0,0)]] then
-                  oqd = [qd[1] + j[1], qd[2] + j[1], qd[3] + j[1], qd[4] + j[1]]
-                  member("layer"&string(d)).image.copyPixels(effGraf, oqd, grab, {#color:j[2], #ink:36})
+                repeat with jt in [[point(-1,-1), color(0,0,255)], [point(-0,-1), color(0,0,255)], [point(-1,-0), color(0,0,255)], [point(1,1), color(255,0,0)],[point(0,1), color(255,0,0)],[point(1,0), color(255,0,0)]] then
+                  oqd = [qd[1] + jt[1], qd[2] + jt[1], qd[3] + jt[1], qd[4] + jt[1]]
+                  member("layer"&string(d)).image.copyPixels(effGraf, oqd, grab, {#color:jt[2], #ink:36})
                 end repeat
               end if
             end if

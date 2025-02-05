@@ -78,6 +78,11 @@ public sealed partial class LingoGlobal
         return d.length;
     }
 
+    public LingoNumber offset(string substr, string from)
+    {
+        return from.IndexOf(substr) + 1;
+    }
+
     public sealed class StringCharIndex : DynamicObject, ISliceable
     {
         public StringCharIndex(string s)
