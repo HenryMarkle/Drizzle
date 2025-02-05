@@ -1,6 +1,5 @@
 global gTiles, tileSetIndex, gCurrentRenderCamera, gAnyDecals, firstCamRepeat, solidMtrx, gLOprops, gLEprops, gTEprops, gDRMatFixes, gDRInvI, grimeActive, grimeOnGradients, bkgFix, gRRSpreadsMore, slimeFxt
-global DRWhite, DRPxl, DRPxlRect, DRDarkSlimeFix, skyRootsFix
-
+global DRWhite, DRPxl, DRPxlRect, DRDarkSlimeFix
 on exitFrame me
   DRPxl = member("pxl").image
   DRPxlRect = DRPxl.rect
@@ -13,7 +12,6 @@ on exitFrame me
   bkgFix = getBoolConfig("Gradients with BackgroundScenes fix")
   gDRMatFixes = getBoolConfig("Material fixes")
   gDRInvI = getBoolConfig("Invisible material fix")
-  skyRootsFix = getBoolConfig("Sky roots fix")
   member("blackOutImg1").image = image(1, 1, 1)
   member("blackOutImg2").image = image(1, 1, 1)
   member("GradientOutput").image = image(1,1,1)
@@ -115,6 +113,16 @@ end
 
 
 on createShortCuts me
+  type diditwork: number
+  type tp: string
+  type holedir: point
+  type stps: number
+  type pos: point
+  type stp: number
+  type lastdir: point
+  type rpt: number
+  type dirsl: list
+  type dir: point
   -- put "init"
   --  member("shortcutdotsImg").image = image(1040, 800, 1)
   
@@ -216,5 +224,3 @@ on createShortCuts me
   --  end repeat
   -- put "shortCutsCreated"
 end
-
-

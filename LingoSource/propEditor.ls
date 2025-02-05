@@ -1,17 +1,15 @@
-global gLEProps, TEdraw, gDirectionKeys, gLOprops, gPEprops, gProps, gPEblink, gPEcounter, peScrollPos, peSavedRotat, peSavedFlip, peFreeQuad, peMousePos, lastPeMouse, mouseStill, propSettings, editSettingsProp, peSavedStretch
-global ropeModel, settingsPropType, gPEcolors, closestProp, longPropPlacePos, snapToGrid, preciseSnap, stg, ps, showControls
 
+
+global gLEProps, TEdraw, gDirectionKeys, gLOprops, gPEprops, gProps, gPEblink, gPEcounter, peScrollPos, peSavedRotat, peSavedFlip, peFreeQuad, peMousePos, lastPeMouse, mouseStill, propSettings, editSettingsProp, peSavedStretch
+
+
+global ropeModel, settingsPropType, gPEcolors, closestProp, longPropPlacePos, snapToGrid, preciseSnap, stg, ps, showControls
 
 on exitFrame me
   if (showControls) then
     sprite(261).blend = 100
   else
     sprite(261).blend = 0
-  end if
-  
-  if dontRunStuff() then
-    go the frame
-    return
   end if
   
   script("levelOverview").exitFrame(me)
@@ -56,11 +54,11 @@ on exitFrame me
   end if
   
   repeat with q = 1 to 4 then
-    if (me.getDirection(q))and(gDirectionKeys[q] = 0) then
-      fast = checkCustomKeybind(#MoveFast, 83)
-      faster = checkCustomKeybind(#MoveFaster, 85)
-      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * fast + 34 * faster)
-      if not checkCustomKeybind(#MoveOutside, 92) then
+    
+    if (_key.keyPressed([86, 91, 88, 84][q]))and(gDirectionKeys[q] = 0) and _movie.window.sizeState <> #minimized then
+      
+      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * _key.keyPressed(83) + 34 * _key.keyPressed(85))
+      if not _key.keyPressed(92) then
         if gLEProps.camPos.loch < -1 then
           gLEProps.camPos.loch = -1
         end if
@@ -81,7 +79,7 @@ on exitFrame me
       drawShortCutsImg(rect(1,1,gLOprops.size.loch,gLOprops.size.locv), 16)
       renderPropsImage()
     end if
-    gDirectionKeys[q] = me.getDirection(q)
+    gDirectionKeys[q] = _key.keyPressed([86, 91, 88, 84][q])
   end repeat
   
   
@@ -90,48 +88,42 @@ on exitFrame me
   script("levelOverview").goToEditor()
   
   if(editSettingsProp = -1)then
-    
-    if checkCustomKeybind(#PropRotateSnap, " ") then 
+    if _key.keyPressed(SPACE) and _movie.window.sizeState <> #minimized then 
       
-      keyW = checkCustomKeybind(#PropSelectUp, "W")
-      keyS = checkCustomKeybind(#PropSelectDown, "S")
-      keyA = checkCustomKeybind(#PropSelectLeft, "A")
-      keyD = checkCustomKeybind(#PropSelectRight, "D")
-      
-      if keyW and keyA then
+      if (_key.keyPressed("W")) and (_key.keyPressed("A")) then
         gPEprops.propRotation = 270 + 45
         gPEcounter = 100
-      else if keyW and keyD then
+      else if (_key.keyPressed("W")) and (_key.keyPressed("D")) then
         gPEprops.propRotation =  45
         gPEcounter = 100
-      else if keyS and keyD then
+      else if (_key.keyPressed("S")) and (_key.keyPressed("D")) then
         gPEprops.propRotation =  90+45
         gPEcounter = 100
-      else if keyS and keyA then
+      else if (_key.keyPressed("S")) and (_key.keyPressed("A")) then
         gPEprops.propRotation =  180+45
         gPEcounter = 100
       else if (gPEcounter = 0)then
-        if keyW then
+        if _key.keyPressed("W")then
           gPEprops.propRotation = 0
-        else if keyA then
+        else if _key.keyPressed("A")then
           gPEprops.propRotation = 270
-        else if keyS then
+        else if _key.keyPressed("S")then
           gPEprops.propRotation = 180
-        else if keyD then
+        else if _key.keyPressed("D")then
           gPEprops.propRotation = 90
         end if
       end if
-    else
-      if me.checkKey("W") then
+    else if _movie.window.sizeState <> #minimized then
+      if checkKey("W") then
         updatePropMenu(point(0, -1))
       end if
-      if me.checkKey("S") then
+      if checkKey("S") then
         updatePropMenu(point(0, 1))
       end if
-      if me.checkKey("A") then
+      if checkKey("A") then
         updatePropMenu(point(-1, 0))
       end if
-      if me.checkKey("D") then
+      if checkKey("D") then
         updatePropMenu(point(1, 0))
       end if
     end if
@@ -140,16 +132,16 @@ on exitFrame me
       editSettingsProp = -1
       updatePropMenu(point(0, 0))
     else if _movie.window.sizeState <> #minimized then
-      if me.checkKey("W") then
+      if checkKey("W") then
         updatePropSettings(point(0, -1))
       end if
-      if me.checkKey("S") then
+      if checkKey("S") then
         updatePropSettings(point(0, 1))
       end if
-      if me.checkKey("A") then
+      if checkKey("A") then
         updatePropSettings(point(-1, 0))
       end if
-      if me.checkKey("D") then
+      if checkKey("D") then
         updatePropSettings(point(1, 0))
       end if
     end if
@@ -158,7 +150,7 @@ on exitFrame me
   
   
   
-  if me.checkKey("Z") then
+  if checkKey("Z") then
     gPEprops.color = gPEprops.color + 1
     if(gPEprops.color > gPEcolors.count)then
       gPEprops.color = 0
@@ -175,7 +167,7 @@ on exitFrame me
     sprite(270).color = color(random(255), random(255), random(255))
   end if
   
-  if me.checkKey("N") then
+  if checkKey("N") then
     if(editSettingsProp = -1)then
       editSettingsProp = 0
       --  DuplicatePropSettings()
@@ -186,15 +178,15 @@ on exitFrame me
     end if
   end if
   
-  if checkCustomKeybind(#PropRotateLeft, "Q") then
+  if _key.keyPressed("Q") and _movie.window.sizeState <> #minimized then
     gPEprops.propRotation = gPEprops.propRotation - 0.01
-    if checkCustomKeybind(#PropRotateFaster, " ") then
+    if _key.keyPressed(SPACE) then
       gPEprops.propRotation = gPEprops.propRotation - 0.1
     end if
     mouseStill = 0
-  else if checkCustomKeybind(#PropRotateRight, "E") then
+  else if _key.keyPressed("E") and _movie.window.sizeState <> #minimized then
     gPEprops.propRotation = gPEprops.propRotation + 0.01
-    if checkCustomKeybind(#PropRotateFaster, " ") then 
+    if _key.keyPressed(SPACE) then 
       gPEprops.propRotation = gPEprops.propRotation + 0.1
     end if
     mouseStill = 0
@@ -206,80 +198,82 @@ on exitFrame me
     gPEprops.propRotation = gPEprops.propRotation - 360
   end if
   
-  if checkCustomKeybind(#PropResetFlipVertical, [" ", ["Y", " "]])then
-    gPEprops.propFlipY = 1
-  else if  checkCustomKeybind(#PropFlipVertical, [" ", ["H", " "]])then
-    gPEprops.propFlipY = -1
-  end if
-  if checkCustomKeybind(#PropResetFlipHorizontal, [" ", ["G", " "]])then
-    gPEprops.propFlipX = 1
-  else if  checkCustomKeybind(#PropFlipHorizontal, [" ", ["J", " "]])then
-    gPEprops.propFlipX = -1
-  end if
-  
-  stretchSpeed = 0.002
-  if checkCustomKeybind(#PropStretchVerticalIncrease, ["Y", "NOT", " "]) then
-    gPEprops.propStretchY = gPEprops.propStretchY + stretchSpeed
-    mouseStill = 0
-  else if checkCustomKeybind(#PropStretchVerticalDecrease, ["H", "NOT", " "]) then
-    gPEprops.propStretchY = gPEprops.propStretchY - stretchSpeed
-    mouseStill = 0
-  end if
-  if checkCustomKeybind(#PropStretchHorizontalDecrease, ["G", "NOT", " "]) then
-    gPEprops.propStretchX = gPEprops.propStretchX - stretchSpeed
-    mouseStill = 0
-  else if checkCustomKeybind(#PropStretchHorizontalIncrease, ["J", "NOT", " "]) then
-    gPEprops.propStretchX = gPEprops.propStretchX + stretchSpeed
-    mouseStill = 0
-  end if
-  
-  if checkCustomKeybind(#PropResetStretch, "T") then
-    gPEprops.propStretchX = 1
-    gPEprops.propStretchY = 1
-  end if
-  if checkCustomKeybind(#PropResetTransformations, "R") then
-    gPEprops.propStretchX = 1
-    gPEprops.propStretchY = 1
-    gPEprops.propFlipX = 1
-    gPEprops.propFlipY = 1
-    gPEprops.propRotation = 0
-  end if
-  
-  if(gPEprops.propStretchY < 0.1) then
-    gPEprops.propStretchY = 0.1
-  else if (gPEprops.propStretchY > 20) then
-    gPEprops.propStretchY = 20
-  end if
-  
-  if(gPEprops.propStretchX < 0.1) then
-    gPEprops.propStretchX = 0.1
-  else if (gPEprops.propStretchX > 20) then
-    gPEprops.propStretchX = 20
+  if _key.keyPressed(SPACE) and _movie.window.sizeState <> #minimized then 
+    if _key.keyPressed("Y")then
+      gPEprops.propFlipY = 1
+    else if  _key.keyPressed("H")then
+      gPEprops.propFlipY = -1
+    end if
+    if _key.keyPressed("G")then
+      gPEprops.propFlipX = 1
+    else if  _key.keyPressed("J")then
+      gPEprops.propFlipX = -1
+    end if
+  else
+    stretchSpeed = 0.002
+    
+    if _key.keyPressed("Y")  and _movie.window.sizeState <> #minimized then
+      gPEprops.propStretchY = gPEprops.propStretchY + stretchSpeed
+      mouseStill = 0
+    else if _key.keyPressed("H") and _movie.window.sizeState <> #minimized then
+      gPEprops.propStretchY = gPEprops.propStretchY - stretchSpeed
+      mouseStill = 0
+    end if
+    if _key.keyPressed("G") and _movie.window.sizeState <> #minimized then
+      gPEprops.propStretchX = gPEprops.propStretchX - stretchSpeed
+      mouseStill = 0
+    else if _key.keyPressed("J") and _movie.window.sizeState <> #minimized then
+      gPEprops.propStretchX = gPEprops.propStretchX + stretchSpeed
+      mouseStill = 0
+    end if
+    if _key.keyPressed("T") and _movie.window.sizeState <> #minimized then
+      gPEprops.propStretchX = 1
+      gPEprops.propStretchY = 1
+    end if
+    if _key.keyPressed("R") and _movie.window.sizeState <> #minimized then
+      gPEprops.propStretchX = 1
+      gPEprops.propStretchY = 1
+      gPEprops.propFlipX = 1
+      gPEprops.propFlipY = 1
+      gPEprops.propRotation = 0
+    end if
+    
+    if(gPEprops.propStretchY < 0.1) then
+      gPEprops.propStretchY = 0.1
+    else if (gPEprops.propStretchY > 20) then
+      gPEprops.propStretchY = 20
+    end if
+    
+    if(gPEprops.propStretchX < 0.1) then
+      gPEprops.propStretchX = 0.1
+    else if (gPEprops.propStretchX > 20) then
+      gPEprops.propStretchX = 20
+    end if
   end if
   
   actn1 = 0
   actn2 = 0
   
   if member("propMenu").text = member("propBaseMenu").text then
-    if _mouse.mouseDown then
+    if _mouse.mouseDown and _movie.window.sizeState <> #minimized then
       editSettingsProp = -1
       updatePropMenu(point(0, 0))
     end if
   end if
   
-  gPEprops.keys.m1 = _mouse.mouseDown
+  gPEprops.keys.m1 = _mouse.mouseDown and _movie.window.sizeState <> #minimized
   if (gPEprops.keys.m1)and(gPEprops.lastKeys.m1=0) then
     actn1 = 1
   end if
   gPEprops.lastKeys.m1 = gPEprops.keys.m1
   
-  gPEprops.keys.m2 = _mouse.rightmouseDown
+  gPEprops.keys.m2 = _mouse.rightmouseDown and _movie.window.sizeState <> #minimized
   if (gPEprops.keys.m2)and(gPEprops.lastKeys.m2=0) then
     actn2 = 1
   end if
   gPEprops.lastKeys.m2 = gPEprops.keys.m2
   
-  if checkCustomKeybind(#PropVariationMode, "F") then
+  if _key.keyPressed("F") and _movie.window.sizeState <> #minimized then
     if(propSettings.findPos(#variation) <> void)and((actn1)or(actn2)) then
       propSettings.variation = propSettings.variation + actn1 - actn2
       mn = (1 - settingsPropType.random)
@@ -297,8 +291,7 @@ on exitFrame me
   end if
   
   if(actn2)then
-    -- Right click to change depth (probably not making custom keybind for)
-    if _key.keyPressed(SPACE) then 
+    if _key.keyPressed(SPACE) and _movie.window.sizeState <> #minimized then 
       gPEprops.depth  = gPEprops.depth  - 1
     else 
       gPEprops.depth = gPEprops.depth  + 1
@@ -313,8 +306,7 @@ on exitFrame me
   
   
   
-  if checkCustomKeybind(#ClearAllProps, ["C","X",48]) then
-    -- Clear all props
+  if _key.keyPressed("C") and _key.keyPressed("X") and _key.keyPressed(48) and _movie.window.sizeState <> #minimized then
     sprite(268).visible = true
     sprite(268).color = color(random(255), 0, 0)
     if(actn1)and(_mouse.mouseLoc.inside(rect(25,25,52,52)))then
@@ -325,7 +317,7 @@ on exitFrame me
     sprite(268).visible = false
   end if
   
-  if me.checkKey("L") then
+  if checkKey("L") then
     
     gPEprops.workLayer = gPEprops.workLayer +1
     if gPEprops.workLayer > 3 then
@@ -389,7 +381,7 @@ on exitFrame me
   --    snapToGrid = 1
   --  end if
   
-  if (checkCustomKeybind(#PropFreeformTL, "U")=0)and(checkCustomKeybind(#PropFreeformTR, "I")=0)and(checkCustomKeybind(#PropFreeformBR, "O")=0)and(checkCustomKeybind(#PropFreeformBL, "P")=0)and(checkCustomKeybind(#PauseRopeSimulation, "X")=0) then
+  if (_key.keyPressed("U")=0)and(_key.keyPressed("I")=0)and(_key.keyPressed("O")=0)and(_key.keyPressed("P")=0)and(_key.keyPressed("X")=0) then
     peMousePos = _mouse.mouseLoc
     if(preciseSnap)then
       peMousePos.loch = ((peMousePos.locH / 8.0)-0.4999).integer * 8
@@ -448,7 +440,7 @@ on exitFrame me
   lastClosest = closestProp
   closestProp = 0
   
-  if(gPEprops.props.count > 0)and((checkCustomKeybind(#PropDelete, "V"))or(checkCustomKeybind(#PropSample, "B"))or(checkCustomKeybind(#PropOptionsPlaced, "M")) ) then
+  if(gPEprops.props.count > 0)and((_key.keyPressed("V"))or(_key.keyPressed("B"))or(_key.keyPressed("M")) ) and _movie.window.sizeState <> #minimized then
     closestProp = findClosestProp()
     
   end if
@@ -482,14 +474,14 @@ on exitFrame me
     
     sprite(266).loc = point(-100, -100)
     
-    if checkCustomKeybind(#PropDelete, "V") then
+    if _key.keyPressed("V") and _movie.window.sizeState <> #minimized then
       sprite(264).color = color(255,0,0)
       sprite(264).foreColor = 6
       if(actn1) then
         gPEprops.props.deleteAt(closestProp)
         renderPropsImage()
       end if
-    else  if checkCustomKeybind(#PropSample, "B") then
+    else  if _key.keyPressed("B") and _movie.window.sizeState <> #minimized then
       sprite(264).color = color(0,255,255)
       sprite(264).foreColor = color(255, 255, 255)
       if(actn1) then
@@ -504,7 +496,7 @@ on exitFrame me
     else   if (editSettingsProp > 0) then
       sprite(264).color = color(0,255,0)
       sprite(264).foreColor = 187
-    else if checkCustomKeybind(#PropOptionsPlaced, "M") then
+    else if _key.keyPressed("M") and _movie.window.sizeState <> #minimized then
       sprite(264).color = color(0,0,255)
       sprite(264).foreColor = 62
       if(actn1) then
@@ -530,15 +522,15 @@ on exitFrame me
     qd[3] = qd[3] - (dir*mem.rect.height * 0.5 * gPEprops.propStretchY * scaleFac * gPEprops.propFlipY) + (perp*mem.rect.width * 0.5 * gPEprops.propStretchX * scaleFac * gPEprops.propFlipX)
     qd[4] = qd[4] - (dir*mem.rect.height * 0.5 * gPEprops.propStretchY * scaleFac * gPEprops.propFlipY) - (perp*mem.rect.width * 0.5 * gPEprops.propStretchX * scaleFac * gPEprops.propFlipX)
     
-    if(checkCustomKeybind(#PropFreeformTL, "U"))then
+    if(_key.keyPressed("U") and _movie.window.sizeState <> #minimized)then
       peFreeQuad[1] = _mouse.mouseLoc - qd[1]
-    else if(checkCustomKeybind(#PropFreeformTR, "I"))then
+    else if(_key.keyPressed("I") and _movie.window.sizeState <> #minimized)then
       peFreeQuad[2] = _mouse.mouseLoc - qd[2]
-    else if(checkCustomKeybind(#PropFreeformBR, "O"))then
+    else if(_key.keyPressed("O") and _movie.window.sizeState <> #minimized)then
       peFreeQuad[3] = _mouse.mouseLoc - qd[3]
-    else if(checkCustomKeybind(#PropFreeformBL, "P"))then
+    else if(_key.keyPressed("P") and _movie.window.sizeState <> #minimized)then
       peFreeQuad[4] = _mouse.mouseLoc - qd[4]
-    else if(checkCustomKeybind(#PropResetFreeform, "K")) or (checkCustomKeybind(#PropResetTransformations, "R")) then
+    else if(_key.keyPressed("K") and _movie.window.sizeState <> #minimized) or (_key.keyPressed("R") and _movie.window.sizeState <> #minimized) then
       peFreeQuad = [point(0,0), point(0,0), point(0,0), point(0,0)]
     end if
     
@@ -568,11 +560,11 @@ on exitFrame me
       mouseStill = mouseStill + 1
     end if
     
-    if(editSettingsProp > 0)or(checkCustomKeybind(#PropOptionsPlaced, "M"))then
+    if(editSettingsProp > 0)or(_key.keyPressed("M") and _movie.window.sizeState <> #minimized)then
       mouseStill = 0
     end if
     
-    if(checkCustomKeybind(#PauseRopeSimulation, "X")=0)then
+    if(_key.keyPressed("X")=0)then
       if(mouseStill = 10)then
         ropeFrames = 0
         resetRopeProp()
@@ -804,36 +796,9 @@ on renderPropsImage()
   end if
 end
 
-
-on getDirection me, q
-  -- check order: left, up, right, down
-  k = [#MoveLeft, #MoveUp, #MoveRight, #MoveDown][q]
-  orig = [86, 91, 88, 84][q]
-  return checkCustomKeybind(k, orig)
-end
-
-on checkKey me, key
+on checkKey(key)
   rtrn = 0
-  
-  kb = VOID
-  case key of
-    "W":
-      kb = #PropSelectUp
-    "S":
-      kb = #PropSelectDown
-    "A":
-      kb = #PropCategoryPrev
-    "D":
-      kb = #PropCategoryNext
-    "Z":
-      kb = #PropColor
-    "N":
-      kb = #PropOptionsSelected
-    "L":
-      kb = #PropChangeLayer
-  end case
-  
-  gPEProps.keys[symbol(key)] = checkCustomKeybind(kb, key) and not dontRunStuff()
+  gPEProps.keys[symbol(key)] = _key.keyPressed(key) and _movie.window.sizeState <> #minimized
   if (gPEProps.keys[symbol(key)])and(gPEProps.lastKeys[symbol(key)]=0) then
     rtrn = 1
   end if
@@ -1462,8 +1427,6 @@ on DuplicatePropSettings()
     end if
   end if
 end
-
-
 
 
 

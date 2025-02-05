@@ -241,5 +241,3 @@ on sharedCheckVCollision(p, friction, layer)
   return p
 end
 
-
-

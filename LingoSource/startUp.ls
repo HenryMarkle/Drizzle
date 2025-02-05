@@ -1,14 +1,12 @@
-global gSaveProps, gTEprops, gTiles, gLEProps, gFullRender, gEEprops, gEffects, gLightEProps, lvlPropOutput, gLEVEL, gLOprops, gLoadedName, gViewRender, gMassRenderL, gCameraProps, gImgXtra, gEnvEditorProps, gPEprops, altGrafLG, gMegaTrash, showControls, gProps, gLOADPATH, gTrashPropOptions, solidMtrx, INT_EXIT, INT_EXRD, DRCustomMatList, DRLastTL, gCustomEffects, GL_ptPos, GL_drPos, GL_keyDict
+global gSaveProps, gTEprops, gTiles, gLEProps, gFullRender, gEEprops, gEffects, gLightEProps, lvlPropOutput, gLEVEL, gLOprops, gLoadedName, gViewRender, gMassRenderL, gCameraProps, gImgXtra, gEnvEditorProps, gPEprops, altGrafLG, gMegaTrash, showControls, gProps, gLOADPATH, gTrashPropOptions, solidMtrx, INT_EXIT, INT_EXRD, DRCustomMatList, DRLastTL, gCustomEffects
 
 on exitFrame me
-  hadException = 0
+  hadException: number = 0
   
   --  clearAsObjects()
   --  clearCache
   --  _global.clearGlobals()
   --  _movie.halt()
-  
-  -- Load config
   member("editorConfig").importFileInto("editorConfig.txt")
   if (member("editorConfig").text = VOID) or (member("editorConfig").text = "") or (member("editorConfig").text.line[1] <> member("baseConfig").text.line[1]) then
     fileCo = new xtra("fileio")
@@ -21,7 +19,6 @@ on exitFrame me
     return
   end if
   
-  -- Global var init
   clearLogs()
   if checkMinimize() then
     _player.appMinimize()
@@ -31,7 +28,7 @@ on exitFrame me
   lvlPropOutput = FALSE
   initDRInternal()
   gFullRender = 1
-  gViewRender = 1 - getBoolConfig("Fast render")
+  gViewRender = 1
   DRLastTL = 1
   gMassRenderL = []
   gLOADPATH = []
@@ -45,19 +42,20 @@ on exitFrame me
   member("level Name").text = "New Project"
   
   gImgXtra = xtra("ImgXtra").new()
-  g = 21
+  
+  g: number = 21
   if (g=2) then
     gSaveProps = [baScreenInfo("width"), baScreenInfo("height"), baScreenInfo("depth")]
     
-    fac = gSaveProps[1].float/gSaveProps[2] .float
+    fac: number = gSaveProps[1].float/gSaveProps[2] .float
     
     screenResolutionPoint = _system.deskTopRectList
     baSetDisplay(screenResolutionPoint.locH,screenResolutionPoint.locV,32,"temp", false)
     
     screenSize = _system.deskTopRectList/2
     
-    midPos = screenResolutionPoint/2
-    windowRect = rect(midPos-screenSize, midPos+screenSize)
+    midPos: point = screenResolutionPoint/2
+    windowRect: rect = rect(midPos-screenSize, midPos+screenSize)
     _movie.window.rect = windowRect
     _movie.stage.drawRect = windowRect
   else
@@ -66,29 +64,9 @@ on exitFrame me
   
   solidMtrx = []
   
-  -- Load keybinds
-  global gCustomKeybinds
-  gCustomKeybinds = getBoolConfigOrDefault("Custom keybinds", true)
-  member("editorKeybinds").text = ""
-  if gCustomKeybinds then
-    initCustomKeybindThings()
-    member("editorKeybinds").importFileInto("editorKeybinds.txt")
-    if (member("editorKeybinds").text <> VOID and member("editorKeybinds").text <> "") then
-      keyFL = member("editorKeybinds")
-      GL_keyDict = VOID
-      repeat with ln = 1 to the number of lines in keyFL.text
-        lin = keyFL.text.line[ln]
-        offst = offset(" : ", lin)
-        if (offst > 0) then
-          registerCustomKeybind(lin.char[1..(offst-1)], lin.char[(offst+3)..lin.length])
-        end if
-      end repeat
-    end if
-  end if
-  
   -- LEVELEDITOR!!!!!
-  cols = 72--gLOprops.size.loch
-  rows = 43--gLOprops.size.locv
+  cols: number = 72--gLOprops.size.loch
+  rows: number = 43--gLOprops.size.locv
   
   gLEProps = [#matrix:[] , #levelEditors:[] , #toolMatrix:[],#camPos:point(0,0)]
   
@@ -105,7 +83,7 @@ on exitFrame me
   
   ResetgEnvEditorProps()
   repeat with q = 1 to cols then
-    ql = []
+    ql: list = []
     repeat with c = 1 to rows then
       ql.add([[1, []], [1, []], [0, []]])
     end repeat
@@ -118,7 +96,7 @@ on exitFrame me
   tmPos:point(1,1), #tmSavPosL:[], #specialEdit:0]
   
   repeat with q = 1 to cols then
-    l = []
+    l: list = []
     repeat with c = 1 to rows then
       l.add([[#tp:"default", #data:0], [#tp:"default", #data:0], [#tp:"default", #data:0]])
     end repeat
@@ -189,7 +167,7 @@ on exitFrame me
   tilesInCat.add([#nm:"Chaotic Greeble", #sz:point(1,1), #specs:[0], #renderType:"tiles", #color:color(100,100,100)])
   
   savLM = member("matInit")
-  member("matInit").importFileInto("Materials\Init.txt")
+  member("matInit").importFileInto("Materials" & the dirSeparator & "Init.txt")
   savLM.name = "matInit"
   DRCustomMatList = []
   if (savLM.text <> VOID) and (savLM.text <> "") then
@@ -216,7 +194,7 @@ on exitFrame me
               if (matTl[#renderType] = "customAutofit") then
                 afMat = member("initImport")
                 afMat.text = ""
-                member("initImport").importFileInto("Materials\" & matTl.nm & ".txt")
+                member("initImport").importFileInto("Materials" & the dirSeparator & matTl.nm & ".txt")
                 afMat.name = "initImport"
                 
                 -- Make sure parts are correct
@@ -226,7 +204,7 @@ on exitFrame me
                 if (not matTl.autofit.findPos(#ignoreTiles)) then matTl.autofit[#ignoreTiles] = []      
                 
                 -- Import information
-                importPart = 2 -- tiles by default
+                importPart = 0
                 repeat with matLnNo = 1 to the number of lines in afMat.text
                   matLn = afMat.text.line[matLnNo]
                   if (matLn = "-Categories") then
@@ -270,27 +248,27 @@ on exitFrame me
   tilesInCat.add([#nm:"SH grate box", #sz:point(1,1), #specs:[0], #placeMethod:"rect", #color:color(160, 0, 255)])
   -- LB
   tilesInCat.add([#nm:"Alt Grate Box", #sz:point(1,1), #specs:[0], #placeMethod:"rect", #color:color(75, 75, 240)])
-  -- Alduris
-  tilesInCat.add([#nm:"Ventbox Rect", #sz:point(1,1), #specs:[0], #placeMethod:"rect", #color:color(0,0,255)])
   setFirstTileCat(gTiles.count + 1)
   
   sav = member("initImport")
-  sav.text = ""
-  member("initImport").importFileInto("Graphics\Init.txt")
+  member("initImport").importFileInto("Graphics" & the dirSeparator & "Init.txt")
   sav.text = sav.text&RETURN&RETURN&member("Drought Needed Init").text
   sav.name = "initImport"
   
   member("previewTiles").image = image(60000, 500, 1)
-  GL_ptPos = 1
+  ptPos = 1
   member("previewTilesDR").image = image(1, 1, 1)
-  GL_drPos = 1
+  drPos = 1
   
   if (getBoolConfig("More tile previews")) then
     member("previewTilesDR").image = image(60000, 500, 1)
   end if
   
-  repeat with q = 1 to the number of lines in sav.text
-    savTextLine = sav.text.line[q]
+  moreTilePreviews = getBoolConfig("More tile previews")
+  prevw = member("previewTiles").image
+  drprevw = member("previewTilesDR").image
+  repeat with q = 1 to the number of lines in sav.text then
+    savTextLine: string = sav.text.line[q]
     if (savTextLine <> "") then
       if (savTextLine.char[1] = "-") then
         vl = value(savTextLine.char[2..savTextLine.length])
@@ -304,11 +282,51 @@ on exitFrame me
         writeException("Tile Init Error", "Line " && q && " is malformed in the Init.txt file from your Graphics folder.")
         hadException = 1
       else
-        -- Here is where it normally would have added the tile to the preview. That is extremely slow so we just straight up don't do that :3
-        ad = value(savTextLine)
-        ad[#ptPos] = 0
-        if (ad.tags.getPos("notTile") = 0) then
-          gTiles[gTiles.count].tls.add(ad)
+        if checkIsDrizzleRendering() then
+          -- Optimization for when only rendering, we don't need to copy previews. So long as it gets implemented, that is.
+          ad = value(savTextLine)
+          if (ad.tags.getPos("notTile") = 0) then
+            gTiles[gTiles.count].tls.add(ad)
+          end if
+        else
+          -- Import tile preview
+          ad = value(savTextLine)
+          if ad.findPos("ptPos") = 0 then
+            -- add if missing
+            ad[#ptPos] = 0
+          end if
+          
+          sav2 = member("previewImprt")
+          member("previewImprt").importFileInto("Graphics" & the dirSeparator & ad.nm & ".png")
+          sav2.name = "previewImprt"
+          --INTERNAL
+          if (checkDRInternal(ad.nm)) then
+            sav2.image = member(ad.nm).image
+          end if
+          calculatedHeight = sav2.image.rect.height
+          vertSZ = 16 * ad.sz.locV
+          horiSZ = 16 * ad.sz.locH
+          if (ad.tp = "voxelStruct") then
+            calculatedHeight = 1 + vertSZ + (20 * (ad.sz.locV + (ad.bfTiles * 2)) * ad.repeatL.count)
+          end if
+          rct = rect(0, calculatedHeight - vertSZ, horiSZ, calculatedHeight)
+          if ((ptPos + horiSZ + 1) > prevw.width) and (moreTilePreviews) then
+            drprevw.copyPixels(sav2.image, rect(drPos, 0, drPos + horiSZ, vertSZ), rct)
+            ad.ptPos = drPos + 60000
+            ad.addProp(#category, gTiles.count)
+            if (ad.tags.getPos("notTile") = 0) then
+              gTiles[gTiles.count].tls.add(ad)
+            end if
+            drPos = drPos + horiSZ + 1
+          else
+            prevw.copyPixels(sav2.image, rect(ptPos, 0, ptPos + horiSZ, vertSZ), rct)
+            ad.ptPos = ptPos
+            ad.addProp(#category, gTiles.count)
+            if (ad.tags.getPos("notTile") = 0) then
+              gTiles[gTiles.count].tls.add(ad)
+            end if
+            ptPos = ptPos + horiSZ + 1  
+          end if
         end if
       end if
     end if
@@ -322,7 +340,7 @@ on exitFrame me
   global gPEcolors
   gPEcolors = []
   sav = member("initImport")
-  member("initImport").importFileInto("Props\propColors.txt")
+  member("initImport").importFileInto("Props" & the dirSeparator & "propColors.txt")
   sav.name = "initImport"
   repeat with q = 1 to the number of lines in sav.text then
     if sav.text.line[q] <> "" then
@@ -331,7 +349,7 @@ on exitFrame me
   end repeat
   
   sav = member("initImport")
-  member("initImport").importFileInto("Props\Init.txt")
+  member("initImport").importFileInto("Props" & the dirSeparator & "Init.txt")
   sav.name = "initImport"
   
   repeat with q = 1 to 1000 ---- PJB fix 2000 --> 1000
@@ -356,7 +374,7 @@ on exitFrame me
         ad = value(savTextLine)
         ad.addProp(#category, gProps.count)
         if (ad.tp = "standard") or (ad.tp = "variedStandard") then
-          dp = 0
+          dp: number = 0
           repeat with i = 1 to ad.repeatL.count
             dp = dp + ad.repeatL[i]
           end repeat
@@ -806,13 +824,12 @@ on exitFrame me
     gEffects[gEffects.count].efs.add([#nm:"Grape Roots"])
     gEffects[gEffects.count].efs.add([#nm:"Og Grass"])
     gEffects[gEffects.count].efs.add([#nm:"Hand Growers"])
-    gEffects[gEffects.count].efs.add([#nm:"Head Lamps"])
   end if
   
   -- Custom effects
   sav = member("initImport")
   sav.text = ""
-  member("initImport").importFileInto("Effects\Init.txt")
+  member("initImport").importFileInto("Effects" & the dirSeparator & "Init.txt")
   sav.name = "initImport"
   
   didNewHeading = 0
@@ -839,10 +856,6 @@ on exitFrame me
           end if
           
           -- Ok add the effect
-          if gEffects[gEffects.count].efs.count >= 7 then
-            -- wrap to a new space if will overflow. mostly because too lazy to figure out scrolling lol
-            gEffects.add([#nm:gEffects[gEffects.count].nm, #efs:[]])
-          end if
           gEffects[gEffects.count].efs.add(ad)
           gCustomEffects.append(ad.nm)
         else
@@ -909,8 +922,6 @@ on exitFrame me
     popupWarning("Init Issues", "Encountered issues while reading inits! See editorExceptionLog.txt for more info.")
   end if
 end
-
-
 
 
 

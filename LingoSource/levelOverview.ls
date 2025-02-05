@@ -50,7 +50,7 @@ on buttonClicked me, bttn
       _movie.go(38)
     "button render level":
       global gViewRender
-      gViewRender = 1 - getBoolConfig("Fast render")
+      gViewRender = 1
       _movie.go(43)
     "button test render":
       newMakeLevel(gLoadedName)
@@ -180,20 +180,18 @@ end
 
 
 on goToEditor me 
-  if dontRunStuff() then return
-  
   goFrm = 0
-  if checkCustomKeybind(#GoTooverview, "1") then
+  if _key.keyPressed("1") and _movie.window.sizeState <> #minimized then
     goFrm = 9
-  else  if checkCustomKeybind(#GoTogeometry, "2") then
+  else  if _key.keyPressed("2") and _movie.window.sizeState <> #minimized then
     goFrm = 15
-  else  if checkCustomKeybind(#GoTotiles, "3") then
+  else  if _key.keyPressed("3") and _movie.window.sizeState <> #minimized then
     goFrm = 25
-  else  if checkCustomKeybind(#GoTocameras, "4") then
+  else  if _key.keyPressed("4") and _movie.window.sizeState <> #minimized then
     goFrm = 32
-  else  if checkCustomKeybind(#GoTolight, "5") then
+  else  if _key.keyPressed("5") and _movie.window.sizeState <> #minimized then
     goFrm = 38
-  else  if checkCustomKeybind(#GoToroomsize, "6") then
+  else  if _key.keyPressed("6") and _movie.window.sizeState <> #minimized then
     goFrm = 19
     member("widthInput").text = gLOprops.size.locH
     member("heightInput").text = gLOprops.size.locV
@@ -209,11 +207,11 @@ on goToEditor me
     
     member("addTilesTop").text = "0"
     member("addTilesLeft").text = "0"
-  else  if checkCustomKeybind(#GoToeffects, "7") then
+  else  if _key.keyPressed("7") and _movie.window.sizeState <> #minimized then
     goFrm = 34
-  else  if checkCustomKeybind(#GoToprops, "8") then
+  else  if _key.keyPressed("8") and _movie.window.sizeState <> #minimized then
     goFrm = 23
-  else  if checkCustomKeybind(#GoToenvironment, "9") then
+  else  if _key.keyPressed("9") and _movie.window.sizeState <> #minimized then
     goFrm = 30
   else if checkMinimize() then
     _player.appMinimize()
@@ -224,23 +222,15 @@ on goToEditor me
     --  showControls = TRUE
     --end if
     
-  else if checkCustomKeybind(#SaveLevel, "0") then
+  else if _key.keyPressed("0") and _movie.window.sizeState <> #minimized then
     levelName = gLoadedName
     member("projectNameInput").text = gLoadedName
     goFrm = 13
-    --  else if _key.keyPressed(BACKSPACE) and _movie.window.sizeState <> #minimized then
-    --    hideHelpClick = TRUE
-    
-  else if checkCustomKeybind(#Render, 111) then
-    global gViewRender
-    gViewRender = 1
-    goFrm = 43
-  else if checkCustomKeybind(#ExportGeometry, VOID) then
-    newMakeLevel(gLoadedName)
-    goFrm = 8
+--  else if _key.keyPressed(BACKSPACE) and _movie.window.sizeState <> #minimized then
+--    hideHelpClick = TRUE
   end if
   
-  checkDebugKeybinds()
+  
   
   if goFrm <> 0 then
     repeat with q = 1 to 22 then
@@ -252,4 +242,3 @@ on goToEditor me
     _movie.go(goFrm)
   end if
 end
-

@@ -1,6 +1,21 @@
 global gLEProps, c, keepLooping, gCustomColor, gLoadedName, gLOprops, dptsL, fogDptsL, gCameraProps, gCurrentRenderCamera, gRenderCameraPixelPos, gRenderCameraTilePos, DRPxl, gGradientImages, gAnyDecals, gDecalColors
 
 on exitFrame me
+  type cols: number
+  type rows: number
+  type extrarect: rect
+  type extrapoint: point
+  type lightmargin: number
+  type dp: number
+  type pstrct: rect
+  type inv: image
+  type smpl: image
+  type smpl2: image
+  type smplps: number
+  type l: string
+  type lr: number
+  type getrect: rect
+  
   if checkMinimize() then
     _player.appMinimize() 
   end if
@@ -183,8 +198,6 @@ on exitFrame me
   keepLooping = 1
   
 end
-
-
 
 
 

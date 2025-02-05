@@ -8,11 +8,6 @@ on exitFrame me
     sprite(32).blend = 0
   end if
   
-  if dontRunStuff() then
-    go the frame
-    return
-  end if
-  
   if checkMinimize() then
     _player.appMinimize()
     
@@ -20,8 +15,6 @@ on exitFrame me
   if checkExit() then
     _player.quit()
   end if
-  
-  checkDebugKeybinds()
   
   txt = "Use the up and down keys to select a project. Use enter to open it."
   put RETURN after txt
@@ -51,7 +44,7 @@ on exitFrame me
   dwn = _key.keyPressed(125)
   lft = _key.keyPressed(123)
   rgth = _key.keyPressed(124)
-  if dontRunStuff() then
+  if _movie.window.sizeState = #minimized then
     up = false
     dwn = false
     lft = false
@@ -93,16 +86,14 @@ on exitFrame me
   ldPrps.lft = lft
   ldPrps.rgth = rgth
   
-  if not dontRunStuff() then
-    if _key.keyPressed("N") and _movie.window.sizeState <> #minimized then
-      gLoadedName = "New Project"
-      member("level Name").text = "New Project"
+  if _key.keyPressed("N") and _movie.window.sizeState <> #minimized then
+    gLoadedName = "New Project"
+    member("level Name").text = "New Project"
+    _movie.go(7)
+  else if (_key.keyPressed(36))and(projects.count > 0) and _movie.window.sizeState <> #minimized then
+    if(chars(projects[ldPrps.currProject], 1, 1) <> "#")then
+      me.loadLevel(projects[ldPrps.currProject])
       _movie.go(7)
-    else if (_key.keyPressed(36))and(projects.count > 0) and _movie.window.sizeState <> #minimized then
-      if(chars(projects[ldPrps.currProject], 1, 1) <> "#")then
-        me.loadLevel(projects[ldPrps.currProject])
-        _movie.go(7)
-      end if
     end if
   end if
   go the frame
@@ -119,9 +110,9 @@ on loadLevel me, lvlName, fullPath
   if(fullPath)then
     pth = ""
   else
-    pth = the moviePath & "LevelEditorProjects\"
+    pth = the moviePath & "LevelEditorProjects" & the dirSeparator
     repeat with f in gLOADPATH then
-      pth = pth & f & "\" 
+      pth = pth & f & the dirSeparator 
     end repeat
   end if
   
@@ -132,7 +123,7 @@ on loadLevel me, lvlName, fullPath
     gLoadedName = ""
     lastBackSlash = 0
     repeat with q = 1 to lvlName.length then
-      if(chars(lvlName, q, q) = "\")then
+      if(chars(lvlName, q, q) = the dirSeparator)then
         lastBackSlash = q
       end if
     end repeat
@@ -146,10 +137,6 @@ on loadLevel me, lvlName, fullPath
   --objFileio.writeString(string(l))
   l2 = objFileio.readFile()
   objFileio.closeFile()
-  
-  sv2 = gLOprops.duplicate()
-  
-  
   
   
   l1 = value(l2.line[1])
@@ -238,7 +225,7 @@ on loadLevel me, lvlName, fullPath
   gLASTDRAWWASFULLANDMINI = 0
   
   
-  put pth & "\" & lvlName & ".png"
+  put pth & the dirSeparator & lvlName & ".png"
   
 end
 
@@ -432,7 +419,7 @@ on versionFix me
     end repeat
     if (cEff <> VOID) then
       if (sideOp = 0) then
-        if ["clinger","standardClinger"].findPos(cEff.tp)>0 then ef.options.add(["Side", ["Left", "Right", "Random"], "Random"])
+        if cEff.tp = "clinger" then ef.options.add(["Side", ["Left", "Right", "Random"], "Random"])
       end if
       if (_3dOp = 0) then
         if cEff.tp = "wall" and cEff.findPos("can3D") > 0 then
@@ -462,7 +449,7 @@ on versionFix me
         else
           ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
         end if
-      else if (["Fungi Flowers", "Lighthouse Flowers", "Colored Fungi Flowers", "Colored Lighthouse Flowers", "Fern", "Giant Mushroom", "Sprawlbush", "featherFern", "Fungus Tree", "Head Lamp"].getPos(ef.nm) > 0) then
+      else if (["Fungi Flowers", "Lighthouse Flowers", "Colored Fungi Flowers", "Colored Lighthouse Flowers", "Fern", "Giant Mushroom", "Sprawlbush", "featherFern", "Fungus Tree"].getPos(ef.nm) > 0) then
         ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "1"])
       else
         ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
@@ -524,7 +511,3 @@ on versionFix me
     end if
   end repeat
 end
-
-
-
-

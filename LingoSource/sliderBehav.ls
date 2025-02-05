@@ -25,4 +25,3 @@ on mouseLeave(me)
   member("buttonText").text = ""
   sprite(20).quad = [point(-100,-100), point(-100,-100), point(-100,-100), point(-100,-100)]
 end mouseLeave
-

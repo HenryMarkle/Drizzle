@@ -19,4 +19,3 @@ on exitFrame me
     DRFinalImage.setPixel(q, 0, gDecalColors[q + 1])
   end repeat
 end
-
