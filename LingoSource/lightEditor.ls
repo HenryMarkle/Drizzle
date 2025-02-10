@@ -1,4 +1,4 @@
-global gTEprops, gLEProps, gTiles, gEEProps, gEffects, gLightEProps, geverysecond, firstFrame, glgtimgQuad, gDirectionKeys, showControls
+global gTEprops, gLEProps, gTiles, gEEProps, gEffects, gLightEProps, geverysecond, firstFrame, glgtimgQuad, gDirectionKeys, showControls, gCustomLights, gLastImported
 
 
 on exitFrame me
@@ -19,11 +19,11 @@ on exitFrame me
   --    gLightEProps.edObj = gLightEProps.lightObjects.count
   --  end if
   
-  repeat with q = 1 to 4 then
-    if (me.getDirection(q))and(gDirectionKeys[q] = 0) then
+  repeat with q2 = 1 to 4 then
+    if (me.getDirection(q2))and(gDirectionKeys[q2] = 0) then
       fast = checkCustomKeybind(#MoveFast, 83)
       faster = checkCustomKeybind(#MoveFaster, 85)
-      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q] * (1 + 9 * fast + 34 * faster)
+      gLEProps.camPos = gLEProps.camPos + [point(-1, 0), point(0,-1), point(1,0), point(0,1)][q2] * (1 + 9 * fast + 34 * faster)
       if not checkCustomKeybind(#MoveOutside, 92) then
         if gLEProps.camPos.loch < -26 then
           gLEProps.camPos.loch = -26
@@ -39,7 +39,7 @@ on exitFrame me
         end if
       end if
     end if
-    gDirectionKeys[q] = me.getDirection(q)
+    gDirectionKeys[q2] = me.getDirection(q2)
     --script("propEditor").renderPropsImage()
   end repeat
   
@@ -129,19 +129,38 @@ on exitFrame me
       exit repeat
     end if 
   end repeat
+  repeat with s = 1 to gCustomLights.count then
+    if gCustomLights[s] = gLastImported then
+      curr = s + l.count
+      exit repeat
+    end if
+  end repeat
   
   mv = 0
   if me.checkKey("r") then
-    mv = - 1
+    mv = -1
   else if me.checkKey("f") then
     mv = 1
   end if
   
   if mv <> 0 then
-    curr = restrict(curr + mv, 1, l.count)
-    sprite(181).member = member(l[curr])
-    sprite(182).member = member(l[curr])
-    gLightEProps.paintShape = l[curr]
+    curr = restrict(curr + mv, 1, l.count + gCustomLights.count)
+    if curr <= l.count then
+      sprite(181).member = member(l[curr])
+      sprite(182).member = member(l[curr])
+      gLightEProps.paintShape = l[curr]
+    else
+      lightMem = member("previewImprt")
+      member("previewImprt").importFileInto("Lights\" & gCustomLights[curr - l.count])
+      lightMem.name = "previewImprt"
+      lmiw = lightMem.image.width-1
+      lmih = lightMem.image.height-1
+      --lightMem.image.copypixels(lightMem.image, [point(lmiw,0),point(0,0),point(0,lmih),point(lmiw,lmih)], lightMem.image.rect, {#ink:0})
+      gLastImported = gCustomLights[curr - l.count]
+      sprite(181).member = lightMem
+      sprite(182).member = lightMem
+      gLightEProps.paintShape = "previewImprt"
+    end if
   end if
   
   
@@ -162,6 +181,11 @@ on exitFrame me
   
   q = [gLightEProps.pos, gLightEProps.pos, gLightEProps.pos, gLightEProps.pos] + [gLEProps.camPos*20, gLEProps.camPos*20,gLEProps.camPos*20, gLEProps.camPos*20]
   q = q + [-dir2*gLightEProps.sz.locH - dir1*gLightEProps.sz.locV, dir2*gLightEProps.sz.locH - dir1*gLightEProps.sz.locV, dir2*gLightEProps.sz.locH + dir1*gLightEProps.sz.locV, -dir2*gLightEProps.sz.locH + dir1*gLightEProps.sz.locV]
+  if curr > l.count then
+    q = flipQuadV(q)
+    q = flipQuadH(q)
+  end if
+  
   --    
   --    member("lightImage").image.copypixels(member("pxl").image, q, rect(0,0,1,1), {#color:obj.clr})
   --  end repeat
@@ -234,8 +258,6 @@ on checkKey me, key
   gLightEProps.lastKeys[symbol(key)] = gLightEProps.keys[symbol(key)]
   return rtrn
 end
-
-
 
 
 

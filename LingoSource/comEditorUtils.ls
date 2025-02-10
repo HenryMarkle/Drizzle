@@ -3,8 +3,8 @@ global gLoadedName, INT_EXIT, INT_EXRD, DRInternalList, DRFirstTileCat, DRLastMa
 on clearLogs()
   --type fl: dynamic
   --type return: void
-  member("logText").text = "Rain World Community Editor; V.0.4.60; Editor exception log"
-  member("DEBUGTR").text = "Rain World Community Editor; V.0.4.60; Large trash log"
+  member("logText").text = "Rain World Community Editor; V.0.4.61; Editor exception log"
+  member("DEBUGTR").text = "Rain World Community Editor; V.0.4.61; Large trash log"
   fl = new xtra("fileio")
   fl.openFile(the moviePath & "editorExceptionLog.txt", 0)
   fl.delete()
@@ -36,6 +36,8 @@ on prepareRelease()
   member("previewTiles").image = image(1, 1, 1)
   member("previewTilesDR").image = image(1, 1, 1)
   member("previewImprt").image = image(1, 1, 1)
+  go the frame
+  _movie.halt()
 end
 
 on checkDebugKeybinds()
@@ -43,8 +45,12 @@ on checkDebugKeybinds()
     exportAll()
   else if checkCustomKeybind(#OutputInternalLog, ["I","L",48]) then -- tab+i+l
     outputInternalLog()
-  else if checkCustomKeybind(#PrepareInternalsForRelease, ["P","I",48]) then-- tab+P+I
+  else if checkCustomKeybind(#PrepareInternalsForRelease, ["P","I",48]) then -- tab+P+I
     prepareRelease()
+  else if checkCustomKeybind(#RestartComputer, VOID) then -- thanks drycrycrystal for suggesting this (also I hid the actual keybind it uses here, because it does have a default one)
+    _system.restart() -- restart computer lmao
+  else if checkCustomKeybind(#ShutdownComputer, VOID) then
+    _system.shutDown()
   end if
 end
 
@@ -93,6 +99,9 @@ on outputInternalLog()
 end
 
 on popupWarning(ttl, msg)
+  if not checkIsDrizzleRendering() then
+    _player.alert(ttl & ": " & msg)
+  end if
   --if not checkIsDrizzleRendering() then
   --  alertObj = new xtra("MUI")
   --  alertArgs = [#buttons:#Ok, #icon:#caution, #title:ttl, #message:msg&RETURN&RETURN&"Press 'Ok' to dismiss.", #movable:TRUE]
@@ -130,19 +139,18 @@ on exportAll()
         objImg.ix_saveImage(["image": m.image, "filename": fname & ".png", "format": "PNG"])
       else if (m.type = #script) then
         createFile(objFileio, pth & m.name & ".ls")
-        objFileio.openFile(pth & m.name & ".ls", 2)
+        objFileio.openFile(pth & m.name & ".ls", 0)
         objFileio.writeString(m.scriptText)
-        objFileio.writeReturn(#windows)
         objFileio.closeFile()
       else if (m.type = #text) then
         createFile(objFileio, fname & ".txt")
-        objFileio.openFile(fname & ".txt", 2)
+        objFileio.openFile(fname & ".txt", 0)
         objFileio.writeString(m.text)
-        objFileio.writeReturn(#windows)
         objFileio.closeFile()
       end if
     end repeat
   end repeat
+  go the frame
   _movie.halt()
 end
 
@@ -364,11 +372,36 @@ end
 
 on initCustomKeybindThings()
   global GL_keyCodeList, GL_allKeybinds
+  gCustomKeybinds = 1
   
-  -- Custom keywords and their corresponding key codes and textual representation
-  GL_keyCodeList = [["ArrowLeft", 123, "Left"], ["ArrowRight", 124, "Right"], ["ArrowDown", 125, "Down"], ["ArrowUp", 126, "Up"], ["Numpad0", 82, "Numpad 0"], ["Numpad1", 83, "Numpad 1"], ["Numpad2", 84, "Numpad 2"], ["Numpad3", 85, "Numpad 3"], ["Numpad4", 86, "Numpad 4"], ["Numpad5", 87, "Numpad 5"], ["Numpad6", 88, "Numpad 6"], ["Numpad7", 89, "Numpad 7"], ["Numpad8", 91, "Numpad 8"], ["Numpad9", 92, "Numpad 9"], ["NumpadPlus", 78, "Numpad Plus"], ["NumpadMinus", 70, "Numpad Minus"], ["NumpadTimes", 66, "Numpad Times"], ["NumpadDivide", 77, "Numpad Divide"], ["NumpadDot", 65, "Numpad Dot"], ["NumpadEnter", 76, "Numpad Enter"], ["Enter", 36, "Enter"], ["ContextMenu", 127, "Context Menu"], ["Escape", 53, "Escape"], ["Tab", 48, "Tab"], ["Space", " ", "Space"], ["Backspace", 51, "Backspace"], ["Insert", 114, "Insert"], ["Delete", 117, "Delete"], ["Home", 115, "Home"], ["End", 119, "End"], ["PageUp", 116, "Page Up"], ["PageDown", 121, "Page Down"], ["Pause", 113, "Pause"], ["F1", 122, "F1"], ["F2", 120, "F2"], ["F3", 99, "F3"], ["F4", 118, "F4"], ["F5", 96, "F5"], ["F6", 97, "F6"], ["F7", 98, "F7"], ["F8", 100, "F8"], ["F9", 101, "F9"], ["F10", 109, "F10"], ["F11", 103, "F11"], ["F12", 111, "F12"]]
+  GL_keyDict = [:]
   
-  -- General keybind list
+  -- Exit button (close editor button)
+  case getStringConfigOrVoid("Exit button") of
+    "VANILLA":
+      GL_keyDict[#close] = [53] -- Escape
+    "DRY":
+      GL_keyDict[#close] = [48, 36, "X"] -- Tab Shift X
+    otherwise:
+      -- DROUGHT or default
+      GL_keyDict[#close] = ["Shift", 53] -- Shift Escape
+  end case
+  
+  -- Minimize button
+  GL_keyDict[#minimize] = ["Shift", 48] -- Shift Tab
+  
+  -- Exit render button
+  case getStringConfigOrVoid("Exit render button") of
+    "VANILLA":
+      GL_keyDict[#exitrender] = [48] -- Tab
+    "DRY":
+      GL_keyDict[#exitrender] = [48, "X", "C"] -- Tab X C
+    otherwise:
+      -- DROUGHT or default
+      GL_keyDict[#exitrender] = [48, "Z", "R"] -- Tab Z R
+  end case
+  
+  GL_keyCodeList = [["ArrowLeft", 123, "Left"], ["ArrowRight", 124, "Right"], ["ArrowDown", 125, "Down"], ["ArrowUp", 126, "Up"], ["Numpad0", 82, "Numpad 0"], ["Numpad1", 83, "Numpad 1"], ["Numpad2", 84, "Numpad 2"], ["Numpad3", 85, "Numpad 3"], ["Numpad4", 86, "Numpad 4"], ["Numpad5", 87, "Numpad 5"], ["Numpad6", 88, "Numpad 6"], ["Numpad7", 89, "Numpad 7"], ["Numpad8", 91, "Numpad 8"], ["Numpad9", 92, "Numpad 9"], ["NumpadPlus", 78, "Numpad Plus"], ["NumpadMinus", 70, "Numpad Minus"], ["NumpadTimes", 66, "Numpad Times"], ["NumpadDivide", 77, "Numpad Divide"], ["NumpadDot", 65, "Numpad Dot"], ["NumpadEnter", 76, "Numpad Enter"], ["Enter", 36, "Enter"], ["ContextMenu", 127, "Context Menu"], ["Escape", 53, "Escape"], ["Tab", 48, "Tab"], ["Space", " ", "Space"], ["Backspace", 51, "Backspace"], ["Insert", 114, "Insert"], ["Delete", 117, "Delete"], ["Home", 115, "Home"], ["End", 119, "End"], ["PageUp", 116, "Page Up"], ["PageDown", 121, "Page Down"], ["Pause", 113, "Pause"], ["F1", 122, "F1"], ["F2", 120, "F2"], ["F3", 99, "F3"], ["F4", 118, "F4"], ["F5", 96, "F5"], ["F6", 97, "F6"], ["F7", 98, "F7"], ["F8", 100, "F8"], ["F9", 101, "F9"], ["F10", 109, "F10"], ["F11", 103, "F11"], ["F12", 111, "F12"], ["F13", 105, "F13"], ["F14", 107, "F14"], ["F15", 113, "F15"]]
 end
 
 on keyToKeyCode(nm)
@@ -400,230 +433,109 @@ on str2symbol(s: string)
 end
 
 
-on actuallyRegisterKeybind(i: number, ln: string)
-  type a: list
-  --if (i <= 0) or (i > GL_keyDict.count) then return
-  
-  a = []
-  repeat while ln contains " " then
-    offst = offset(" ", ln)
-    if offst = 1 then
-      ln = ln.char[2..(ln.length)]
-      --delete ln[1]
-    else if offset("--", ln) = 1 then
-      exit repeat
-    else
-      a.append(keyToKeyCode(ln.char[1..(offst-1)]))
-      ln = ln.char[(offst+1)..(ln.length)]
-      --delete ln.char[1..offst]
-    end if
-  end repeat
-  if (ln <> "") and offset("--", ln) <> 1 then
-    a.append(keyToKeyCode(ln)) -- the rest of everything else
-  end if
-  
-  GL_keyDict[i] = a
-end
-
-on registerCustomKeybind(k: string, v: string)
-  if (k = "") or (v = "") or (v = "NONE") then return
-  
-  -- Create object if not already created
-  if GL_keyDict = VOID then
-    GL_keyDict = [:]
-    
-    -- Exit button (close editor button)
-    case getStringConfigOrVoid("Exit button") of
-      "VANILLA":
-        GL_keyDict[#close] = [53] -- Escape
-      "DRY":
-        GL_keyDict[#close] = [48, 36, "X"] -- Tab Shift X
-      otherwise:
-        -- DROUGHT or default
-        GL_keyDict[#close] = ["Shift", 53] -- Shift Escape
-    end case
-    
-    -- Minimize button
-    GL_keyDict[#minimize] = ["Shift", 48] -- Shift Tab
-    
-    -- Exit render button
-    case getStringConfigOrVoid("Exit render button") of
-      "VANILLA":
-        GL_keyDict[#exitrender] = [48] -- Tab
-      "DRY":
-        GL_keyDict[#exitrender] = [48, "X", "C"] -- Tab X C
-      otherwise:
-        -- DROUGHT or default
-        GL_keyDict[#exitrender] = [48, "Z", "R"] -- Tab Z R
-    end case
+on registerCustomKeybind(k, v)
+  if (k = "") or (v = "") then
+    return
   end if
   
   -- Actually register (why symbols? they're *a lot* faster than strings lol)
-  actuallyRegisterKeybind(str2symbol(k),v)
+  i = str2symbol(k)
+  
+  if (v = "NONE") then
+    GL_keyDict[i] = [VOID]
+  end if
+  
+  a = []
+  repeat while v contains " " then
+    offst = offset(" ", v)
+    if offst = 1 then
+      v = v.char[2..(v.length)]
+      --delete v[1]
+    else if offset("--", v) = 1 then
+      exit repeat
+    else
+      a.append(keyToKeyCode(v.char[1..(offst-1)]))
+      v = v.char[(offst+1)..(v.length)]
+      --delete v.char[1..offst]
+    end if
+  end repeat
+  if (v <> "") and offset("--", v) <> 1 then a.append(keyToKeyCode(v)) -- the rest of everything else
+  
+  if a.count = 0 then
+    GL_keyDict[i] = [VOID]
+  else
+    GL_keyDict[i] = a
+  end if
 end
 
-on checkCustomKeybind(k: dynamic, d: dynamic)
-  type v: dynamic
-  type control: number
-  type shift: number
-  type alt: number
-  type inv: number
-  type return: number
-
-  if dontRunStuff() or (k = VOID and d = VOID) then
+on checkCustomKeybind(k, d)
+  if dontRunStuff() then
     return False
   end if
-  global gstuff
-  if not ilk(gstuff, #list) then gstuff = []
-  if ilk(k, #string) and gstuff.getPos(k) = 0 then
-    gstuff.append(k)
-    popupWarning("Invalid keybind", k)
-    return false
-  end if
-  if gCustomKeybinds then
+  
+  if gCustomKeybinds and k <> VOID then
     -- Try to retrieve the actual keybind
-    v = VOID
-    if GL_keyDict <> VOID and k <> VOID then
-      v = GL_keyDict[k]
-      if v = VOID then
-        return FALSE
+    v = GL_keyDict.getAProp(k)  --[k]
+    if v <> VOID then
+      control = 0
+      shift = 0
+      alt = 0
+      inv = 0
+      repeat with check in v then
+        if check = VOID then
+          return false
+        else if check = "NOT" then
+          inv = 1
+          next repeat
+        else if check = "Control" then
+          control = 1
+        else if check = "Shift" then
+          shift = 1
+        else if check = "Alt" then
+          alt = 1
+        else if inv=1 and _key.keyPressed(check) then
+          return False
+        else if inv=0 and not _key.keyPressed(check) then
+          return False
+        end if
+        inv = 0
+      end repeat
+      
+      if bitXor(_key.controlDown, control) then
+        return false
       end if
-    else
-      if d = VOID then
-        return False
-      else if ilk(d, #list) then
-        v = d
-      else
-        return _key.keyPressed(d)
+      if bitXor(_key.shiftDown, shift) then
+        return false
       end if
+      if bitXor(_key.optionDown, alt) then
+        return false
+      end if
+      return True
     end if
-    
-    control = 0
-    shift = 0
-    alt = 0
+  end if
+  
+  -- Default case
+  if ilk(d, #list) then
     inv = 0
-    repeat with check in v then
+    repeat with check in d then
       if check = VOID then
-        next repeat
+        return false
       else if check = "NOT" then
         inv = 1
         next repeat
-      else if check = "Control" then
-        control = 1
-      else if check = "Shift" then
-        shift = 1
-      else if check = "Alt" then
-        alt = 1
-      else if inv=1 and _key.keyPressed(check) then
+      else if not _key.keyPressed(check) and inv=0 then
         return False
-      else if inv=0 and not _key.keyPressed(check) then
+      else if _key.keyPressed(check) and inv=1 then
         return False
       end if
-      inv = 0
     end repeat
-    
-    if _key.controlDown then
-      if control=0 then
-        return false
-      end if
-    else if control=1 then
-      return false
-    end if
-    if _key.shiftDown then
-      if shift=0 then
-        return false
-      end if
-    else if shift=1 then
-      return false
-    end if
-    if _key.optionDown then
-      if alt=0 then
-        return false
-      end if
-    else if alt=1 then
-      return false
-    end if
-    
-    return True
+    return true
+  else if d <> void then
+    return _key.keyPressed(d)
   else
-    if ilk(d, #list) then
-      inv = 0
-      repeat with check in d then
-        if check = "NOT" then
-          inv = 1
-          next repeat
-        else if not _key.keyPressed(check) and inv=0 then
-          return False
-        else if _key.keyPressed(check) and inv=1 then
-          return False
-        end if
-      end repeat
-      return true
-    else if d <> void then
-      return _key.keyPressed(d)
-    else
-      return false
-    end if
+    return false
   end if
   return true
 end
-
-on getKeybindStr(k: dynamic, d: symbol)
-  type s: number
-  type inv: number
-  type addPlus: number
-  type return: string
-
-  if k = VOID then
-    return d
-  end if
-  
-  v = GL_keyDict[k]
-  if v = VOID then return d
-  
-  global GL_keyCodeList
-  s = ""
-  inv = False
-  addPlus = False
-  
-  customStrCases = [["+", "plus"], ["-", "minus"], [",", "comma"], [".", "dot"], ["/", "slash"], ["\", "backslash"], [" ", "space"], ["`", "backtick"], ["~", "tilde"], ["!", "exclamation mark"], ["@", "at"], ["#", "pound"], ["$", "dollar sign"], ["%", "percent"], ["^", "caret"], ["&", "ampersand"], ["*", "asterisk"], ["(", "left parenthesis"], [")", "right parenthesis"], ["_", "underscore"], ["=", "equals"], ["|", "pipe"], ["'", "apostrophe"], [QUOTE, "quote"], [":", "colon"], [";", "semicolon"], ["?", "question mark"]]
-  
-  repeat with check in v then
-    if inv then
-      inv = False
-      next repeat
-    else if v = "NOT" then
-      inv = True
-      next repeat
-    end if
-    
-    if addPlus then s = s & "+"
-    addPlus = True
-    
-    if ilk(v, #string) then
-      p = [v, v]
-      repeat with pair in customStrCases then
-        if pair[1] = v then
-          p = pair
-          exit repeat
-        end if
-      end repeat
-      s = s & p[2]
-    else
-      str = "???"
-      repeat with tuple in GL_keyCodeList then
-        if tuple[2] = v then
-          str = tuple[3]
-          exit repeat
-        end if
-      end repeat
-      s = s & str
-    end if
-  end repeat
-  if s = "" then return d
-  return s
-end
-
-
 
 

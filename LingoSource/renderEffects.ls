@@ -379,8 +379,9 @@ on initEffect me
     end if
   end repeat
   
-  effectIn3D = false
-  gRotOp = false
+  effectIn3D = FALSE
+  gRotOp = FALSE
+  skyRootsFix = 0
   repeat with op in efopts
     case op[1] of 
       "Layers":
@@ -427,6 +428,10 @@ on initEffect me
       "Lamp Color":
         lampColr = [color(255, 0, 255), color(0, 255, 255), color(0, 255, 0)][["Color1", "Color2", "Dead"].getPos(op[3])]
         LampLayer = ["A", "B", "C"][["Color1", "Color2", "Dead"].getPos(op[3])]
+      "Require In-Bounds":
+        if (op[3] = "Yes") then
+          skyRootsFix = 1
+        end if
     end case
   end repeat
   
@@ -814,7 +819,7 @@ on ApplyCustomEffect(me, q, c, effectr, efname)
           if solidMtrx[q2][c2][layer]=0 and solidCheck>=1 then
             repeat with i = 1 to mtrx[q2][c2] * 0.01 * amount then
               pnt = me.giveGroundPosCustom(q,c,layer, cEff.tp)
-              clingerMult = (giveMiddleOfTile(point(q,c)).locH>pnt.locH)
+              clingerMult = (giveMiddleOfTile(point(q,c))>pnt.locH)
               d = random(9) + ((layer-1)*10)
               
               var = random(cEff.vars)
@@ -9460,7 +9465,9 @@ on ApplyMosaicPlant me, q, c
   if ind > 0 then
     startPt = mosaicPlantStarts[ind]
     
-    if solidMtrx[startPt.locH.integer][startPt.locV.integer][lr+1] = 0 then exit
+    if solidMtrx[startPt.locH.integer][startPt.locV.integer][lr+1] = 0 then
+      return
+    end if
     
     -- What is the closest other?
     clsPt = point(-100000, -100000)
@@ -9643,7 +9650,9 @@ on ApplyCobweb me, q, c
   end case
   lr = 1 + (d > 9) + (d > 19)
   
-  if solidMtrx[q2][c2][lr] = 1 then exit
+  if solidMtrx[q2][c2][lr] = 1 then
+    return
+  end if
   
   startPt = giveMiddleOfTile(point(q, c))+point(-11+random(21), -11+random(21)) + gRenderCameraTilePos * 20.0
   
@@ -9665,7 +9674,9 @@ on ApplyCobweb me, q, c
     rot = (rot + 6) mod 360
   end repeat
   
-  if angs.count < 3 then exit -- we preferably want at least 3 points
+  if angs.count < 3 then -- we preferably want at least 3 points
+    return
+  end if
   
   -- Pick our angles
   picked = [angs[random(angs.count)]]
@@ -10105,8 +10116,6 @@ on BezPoint me, startPT, endPT, ctrlPT, T
   output = point(xVal, yVal)
   return output
 end
-
-
 
 
 

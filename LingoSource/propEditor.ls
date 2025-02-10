@@ -206,14 +206,14 @@ on exitFrame me
     gPEprops.propRotation = gPEprops.propRotation - 360
   end if
   
-  if checkCustomKeybind(#PropResetFlipVertical, [" ", ["Y", " "]])then
+  if checkCustomKeybind(#PropResetFlipVertical, ["Y", " "])then
     gPEprops.propFlipY = 1
-  else if  checkCustomKeybind(#PropFlipVertical, [" ", ["H", " "]])then
+  else if  checkCustomKeybind(#PropFlipVertical, ["H", " "])then
     gPEprops.propFlipY = -1
   end if
-  if checkCustomKeybind(#PropResetFlipHorizontal, [" ", ["G", " "]])then
+  if checkCustomKeybind(#PropResetFlipHorizontal, ["G", " "])then
     gPEprops.propFlipX = 1
-  else if  checkCustomKeybind(#PropFlipHorizontal, [" ", ["J", " "]])then
+  else if  checkCustomKeybind(#PropFlipHorizontal, ["J", " "])then
     gPEprops.propFlipX = -1
   end if
   
@@ -1462,8 +1462,6 @@ on DuplicatePropSettings()
     end if
   end if
 end
-
-
 
 
 

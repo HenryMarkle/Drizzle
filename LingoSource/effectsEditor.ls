@@ -392,6 +392,7 @@ on newEffect me
       ef.options.add(["Color Intensity", ["High", "Medium", "Low", "None", "Random"], "Medium"])
       ef.options.add(["Fruit Density", ["High", "Medium", "Low", "None"], "None"])
       ef.options.add(["Leaf Density", [], random(100)])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     "Little Flowers":
@@ -489,11 +490,13 @@ on newEffect me
       
       if(["Arm Growers", "Growers", "Mini Growers", "Left Facing Kelp", "Right Facing Kelp", "Mixed Facing Kelp", "Bubble Grower", "Coral Growers", "Leaf Growers", "Meat Growers"].getPos( ef.nm ) > 0 )then
         ef.crossScreen = 1
+        ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       end if
       
     "Rollers", "Thorn Growers", "Horror Growers", "Garbage Spirals", "Spinets", "Small Springs", "Fuzzy Growers", "Coral Growers", "Leaf Growers", "Meat Growers", "Thunder Growers", "Ice Growers", "Grass Growers", "Fancy Growers":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
       ef.options.add(["Color", ["Color1", "Color2", "Dead"], "Color2"])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     "Mosaic Plants":
@@ -560,21 +563,25 @@ on newEffect me
       
     "Hang Roots", "Thick Roots", "Shadow Plants":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     "Colored Hang Roots", "Colored Thick Roots":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
       ef.options.add(["Color", ["Color1", "Color2", "Dead"], "Color2"])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     "Colored Shadow Plants":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
       ef.options.add(["Color", ["Color1", "Color2", "Dead"], "Color2"])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     "Root Plants":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
       ef.options.add(["Color", ["Color1", "Color2", "Dead"], "Color2"])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     "Restore As Scaffolding":
@@ -606,6 +613,7 @@ on newEffect me
     "Grape Roots", "Hand Growers":
       ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
       ef.options.add(["Color", ["Color1", "Color2", "Dead"], "Color2"])
+      ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
       ef.crossScreen = 1
       
     otherwise:
@@ -615,8 +623,6 @@ on newEffect me
         else
           ef.options.add(["Layers", ["All", "1", "2", "3", "1:st and 2:nd", "2:nd and 3:rd"], "All"])
         end if
-        
-        if ["grower", "hanger", "clinger"].getPos(origEf.tp)>0 then ef.crossScreen = 1
         
         if origEf.findPos("pickColor") then
           if origEf.pickColor = 1 then
@@ -632,6 +638,11 @@ on newEffect me
         
         if origEf.tp = "clinger" or origEf.tp = "standardClinger" then
           ef.options.add(["Side", ["Left", "Right", "Random"], "Random"])
+        end if
+        
+        if ["grower", "hanger", "clinger"].getPos(origEf.tp)>0 then
+          ef.crossScreen = 1
+          ef.options.add(["Require In-Bounds", ["Yes", "No"], ["No", "Yes"][getBoolConfig("Sky roots fix") + 1]])
         end if
         
       end if
@@ -853,7 +864,7 @@ on changeOption me
       gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = restrict(gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3], 1, 100)
       
       
-    "Color", "Detail Color", "Fatness", "Size", "Layers", "3D", "Ceramic Color", "Effect Color", "Variation", "Color 1", "Color 2", "Affect Gradients and Decals", "Rotate", "Color Intensity", "Fruit Density", "Mushroom Size", "Mushroom Width", "Flowers", "Side", "Finger Thickness", "Finger Length", "Lamp Color":
+    "Color", "Detail Color", "Fatness", "Size", "Layers", "3D", "Ceramic Color", "Effect Color", "Variation", "Color 1", "Color 2", "Affect Gradients and Decals", "Rotate", "Color Intensity", "Fruit Density", "Mushroom Size", "Mushroom Width", "Flowers", "Side", "Finger Thickness", "Finger Length", "Lamp Color", "Require In-Bounds":
       gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][3] = gEEprops.effects[gEEprops.editEffect].options[gEEprops.emPos.locV][2][gEEprops.emPos.locH]
       
       
@@ -874,8 +885,6 @@ on updateAllText me
   me.updateEffectsMenu(point(0,0))
   
 end
-
-
 
 
 
