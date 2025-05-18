@@ -1,4 +1,4 @@
-global projects, ldPrps, gTEprops, gTiles, gLEProps, gEEprops, gLightEProps, gLEVEL, gLOprops, gLoadedName, gCameraProps, gEnvEditorProps, gPEprops, gLOADPATH, showControls, gEffects, gCustomEffects
+global projects, ldPrps, gTEprops, gTiles, gLEProps, gEEprops, gLightEProps, gLEVEL, gLOprops, gLoadedName, gCameraProps, gEnvEditorProps, gPEprops, gLOADPATH, showControls, gEffects, gCustomEffects, gFSLastTm, gFSFlag
 
 
 on exitFrame me
@@ -9,6 +9,7 @@ on exitFrame me
   end if
   
   if dontRunStuff() then
+    gFSLastTm = _system.milliseconds
     go the frame
     return
   end if
@@ -22,6 +23,12 @@ on exitFrame me
   end if
   
   checkDebugKeybinds()
+  
+  gFSFlag = false
+  if _system.milliseconds - gFSLastTm > 10 then
+    gFSFlag = true
+    gFSLastTm = _system.milliseconds
+  end if
   
   txt = "Use the up and down keys to select a project. Use enter to open it."
   put RETURN after txt
@@ -47,10 +54,10 @@ on exitFrame me
   
   --lstKeys
   -- ldPrps
-  up = _key.keyPressed(126)
-  dwn = _key.keyPressed(125)
-  lft = _key.keyPressed(123)
-  rgth = _key.keyPressed(124)
+  up = checkCustomKeybind(#LevelBrowseUp, 126) --_key.keyPressed(126)
+  dwn = checkCustomKeybind(#LevelBrowseDown, 125) --_key.keyPressed(125)
+  lft = checkCustomKeybind(#LevelBrowseLeft, 123) --_key.keyPressed(123)
+  rgth = checkCustomKeybind(#LevelBrowseRight, 124) --_key.keyPressed(124)
   if dontRunStuff() then
     up = false
     dwn = false
@@ -58,17 +65,31 @@ on exitFrame me
     rgth = false
   end if
   
-  if (up) and (ldPrps.lstUp=0) then
-    ldPrps.currProject = ldPrps.currProject -1
-    if ldPrps.currProject < 1 then
-      ldPrps.currProject = projects.count
+  if (up) then
+    if gFSFlag then
+      if (ldPrps.lstUp=0) or (ldPrps.lstUp > 20 and (ldPrps.lstUp mod 4) = 0) then
+        ldPrps.currProject = ldPrps.currProject -1
+        if ldPrps.currProject < 1 then
+          ldPrps.currProject = projects.count
+        end if
+      end if
+      ldPrps.lstUp = ldPrps.lstUp + 1
     end if
+  else
+    ldPrps.lstUp = 0
   end if
-  if (dwn) and (ldPrps.lstdwn=0) then
-    ldPrps.currProject = ldPrps.currProject +1
-    if ldPrps.currProject > projects.count then
-      ldPrps.currProject = 1
+  if (dwn) then
+    if gFSFlag then
+      if (ldPrps.lstdwn=0) or (ldPrps.lstdwn > 20 and (ldPrps.lstdwn mod 4) = 0) then
+        ldPrps.currProject = ldPrps.currProject +1
+        if ldPrps.currProject > projects.count then
+          ldPrps.currProject = 1
+        end if
+      end if
+      ldPrps.lstdwn = ldPrps.lstdwn + 1
     end if
+  else
+    ldPrps.lstdwn = 0
   end if
   
   if ldPrps.currProject < ldPrps.listScrollPos then
@@ -88,17 +109,15 @@ on exitFrame me
     end if
   end if
   
-  ldPrps.lstUp = up
-  ldPrps.lstDwn = dwn
   ldPrps.lft = lft
   ldPrps.rgth = rgth
   
   if not dontRunStuff() then
-    if _key.keyPressed("N") and _movie.window.sizeState <> #minimized then
+    if checkCustomKeybind(#LevelBrowseNew, "N") and _movie.window.sizeState <> #minimized then
       gLoadedName = "New Project"
       member("level Name").text = "New Project"
       _movie.go(7)
-    else if (_key.keyPressed(36))and(projects.count > 0) and _movie.window.sizeState <> #minimized then
+    else if (checkCustomKeybind(#LevelBrowseSelect, 36))and(projects.count > 0) and _movie.window.sizeState <> #minimized then
       if(chars(projects[ldPrps.currProject], 1, 1) <> "#")then
         me.loadLevel(projects[ldPrps.currProject])
         _movie.go(7)
@@ -119,9 +138,9 @@ on loadLevel me, lvlName, fullPath
   if(fullPath)then
     pth = ""
   else
-    pth = the moviePath & "LevelEditorProjects" & the dirSeparator
+    pth = the moviePath & "LevelEditorProjects\"
     repeat with f in gLOADPATH then
-      pth = pth & f & the dirSeparator 
+      pth = pth & f & "\" 
     end repeat
   end if
   
@@ -132,7 +151,7 @@ on loadLevel me, lvlName, fullPath
     gLoadedName = ""
     lastBackSlash = 0
     repeat with q = 1 to lvlName.length then
-      if(chars(lvlName, q, q) = the dirSeparator)then
+      if(chars(lvlName, q, q) = "\")then
         lastBackSlash = q
       end if
     end repeat
@@ -146,6 +165,8 @@ on loadLevel me, lvlName, fullPath
   --objFileio.writeString(string(l))
   l2 = objFileio.readFile()
   objFileio.closeFile()
+  
+  --sv2 = gLOprops.duplicate()
   
   
   
@@ -236,7 +257,7 @@ on loadLevel me, lvlName, fullPath
   gLASTDRAWWASFULLANDMINI = 0
   
   
-  put pth & the dirSeparator & lvlName & ".png"
+  put pth & "\" & lvlName & ".png"
   
 end
 
