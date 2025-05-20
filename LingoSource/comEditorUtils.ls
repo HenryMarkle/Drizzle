@@ -121,7 +121,7 @@ on exportAll()
   type objFileio: dynamic
   type objImg: dynamic
   type return: void
-  pth = the moviePath & "Export\"
+  pth = the moviePath & "Export" & the dirSeparator
   objFileio = new xtra("fileio")
   objImg = new xtra("ImgXtra")
   i = 1
@@ -343,7 +343,7 @@ on tryAddToPreview(ad: dynamic)
   
   -- Import tile preview
   sav2 = member("previewImprt")
-  member("previewImprt").importFileInto("Graphics\" & ad.nm & ".png")
+  member("previewImprt").importFileInto("Graphics" & the dirSeparator & ad.nm & ".png")
   sav2.name = "previewImprt"
   --INTERNAL
   if (checkDRInternal(ad.nm)) then

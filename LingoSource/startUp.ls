@@ -813,7 +813,7 @@ on exitFrame me
   -- Custom effects
   sav = member("initImport")
   sav.text = ""
-  member("initImport").importFileInto("Effects\Init.txt")
+  member("initImport").importFileInto("Effects"&the dirSeparator&"Init.txt")
   sav.name = "initImport"
   
   didNewHeading = 0
@@ -872,7 +872,7 @@ on exitFrame me
   gCustomLights = []
   if not checkIsDrizzleRendering() then
     
-    pth = the moviePath & "Lights\"
+    pth = the moviePath & "Lights" & the dirSeparator
     i = 1
     repeat while true then
       n = getNthFileNameInFolder(pth, i)
