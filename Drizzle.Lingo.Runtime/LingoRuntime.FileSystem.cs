@@ -6,7 +6,7 @@ namespace Drizzle.Lingo.Runtime;
 
 public partial class LingoRuntime
 {
-    public static readonly string MovieBasePath;
+    public static string MovieBasePath;
 
     static LingoRuntime()
     {
